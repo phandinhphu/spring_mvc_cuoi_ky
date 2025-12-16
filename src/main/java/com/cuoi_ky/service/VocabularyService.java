@@ -26,7 +26,7 @@ public interface VocabularyService {
     List<Vocabulary> searchVocabularies(String keyword);
     
     /**
-     * Search by specific type
+     * Search by specific type (word, meaning, hiragana, katakana, kanji, romaji)
      */
     List<Vocabulary> searchByType(String type, String keyword);
     

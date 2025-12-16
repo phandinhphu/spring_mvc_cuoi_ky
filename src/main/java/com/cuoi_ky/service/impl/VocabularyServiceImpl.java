@@ -63,6 +63,8 @@ public class VocabularyServiceImpl implements VocabularyService {
                 return vocabularyRepository.findByKatakana(cleanKeyword);
             case "kanji":
                 return vocabularyRepository.findByKanji(cleanKeyword);
+            case "romaji":
+                return vocabularyRepository.findByRomaji(cleanKeyword);
             default:
                 return vocabularyRepository.searchByKeyword(cleanKeyword);
         }
