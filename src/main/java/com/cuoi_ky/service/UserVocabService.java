@@ -31,6 +31,11 @@ public interface UserVocabService {
     UserVocab addVocabularyToUser(Integer userId, Integer vocabId);
     
     /**
+     * Remove vocabulary from user's list
+     */
+    void removeVocabularyFromUser(Integer userId, Integer vocabId);
+    
+    /**
      * Update vocabulary status
      */
     UserVocab updateVocabularyStatus(Integer userId, Integer vocabId, String status);

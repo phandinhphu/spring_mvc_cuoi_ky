@@ -31,7 +31,9 @@
                     <div class="card mb-4">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h4 class="mb-0">Chi tiết từ vựng</h4>
-                            <button class="btn btn-primary btn-sm btn-custom" id="addToListBtn">
+                            <button class="btn btn-sm btn-custom ${isInMyList ? 'btn-success' : 'btn-primary'}" 
+                                    id="addToListBtn"
+                                    data-in-list="${isInMyList}">
                                 <i class="fas ${isInMyList ? 'fa-check' : 'fa-plus'} me-2"></i>
                                 ${isInMyList ? 'Đã thêm' : 'Thêm vào sổ tay'}
                             </button>
@@ -39,7 +41,11 @@
                         <div class="card-body">
                             <div class="text-center mb-4 py-4 bg-light rounded">
                                 <div class="vocab-word" style="font-size: 3rem;">${vocabulary.word}</div>
-                                <button class="audio-btn mx-auto mt-3" id="playAudioBtn">
+                                <button class="audio-btn mx-auto mt-3" 
+                                        id="playAudioBtn"
+                                        data-audio-url="${vocabulary.audioUrl}"
+                                        data-word="${vocabulary.word}"
+                                        data-romaji="${vocabulary.romaji}">
                                     <i class="fas fa-volume-up"></i>
                                 </button>
                             </div>
@@ -98,7 +104,8 @@
                                                     <div class="mb-2">
                                                         <i class="fas fa-quote-left text-muted me-2"></i>
                                                         <span class="h6">${example.exampleSentence}</span>
-                                                        <button class="btn btn-sm btn-link text-primary">
+                                                        <button class="btn btn-sm btn-link text-primary example-audio-btn"
+                                                                data-sentence="${example.exampleSentence}">
                                                             <i class="fas fa-volume-up"></i>
                                                         </button>
                                                     </div>
@@ -146,7 +153,7 @@
                         </div>
                     </div>
 
-                    <!-- Info Box -->
+                    <!-- Info Box không có trong db
                     <div class="card mb-4">
                         <div class="card-header">
                             <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Thông tin</h6>
@@ -177,10 +184,10 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
-                    <!-- Related Words -->
-                    <div class="card">
+                    <!-- Related Words không có trong bảng -->
+                    <!-- <div class="card">
                         <div class="card-header">
                             <h6 class="mb-0"><i class="fas fa-link me-2"></i>Từ liên quan</h6>
                         </div>
@@ -199,7 +206,7 @@
                                     <small class="text-muted">Cảm ơn</small>
                                 </a>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -209,30 +216,176 @@
     <jsp:include page="../layouts/footer.jsp" />
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="${pageContext.request.contextPath}/resources/js/app.js"></script>
     <script>
+        // Wait for voices to be loaded
+        if ('speechSynthesis' in window) {
+            let voicesLoaded = false;
+            window.speechSynthesis.onvoiceschanged = function() {
+                voicesLoaded = true;
+            };
+            
+            // Load voices immediately if already available
+            if (window.speechSynthesis.getVoices().length > 0) {
+                voicesLoaded = true;
+            }
+        }
+
         // Add to list functionality
-        document.getElementById('addToListBtn').addEventListener('click', function() {
-            const isAdded = this.innerHTML.includes('Đã thêm');
-            if (isAdded) {
-                this.innerHTML = '<i class="fas fa-plus me-2"></i>Thêm vào sổ tay';
-                this.classList.replace('btn-success', 'btn-primary');
+        const addToListBtn = document.getElementById('addToListBtn');
+        const vocabId = parseInt('${vocabulary.id}');
+        let isInList = addToListBtn.getAttribute('data-in-list') === 'true';
+
+        addToListBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Disable button during request
+            const wasDisabled = this.disabled;
+            this.disabled = true;
+            const originalHTML = this.innerHTML;
+            const originalClasses = this.className;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+            
+            // Make API call
+            const url = '${pageContext.request.contextPath}/vocabulary/toggle-list/' + vocabId;
+            console.log('Calling URL:', url);
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.warn('Response is not JSON, content-type:', contentType);
+                    return response.text().then(text => {
+                        console.log('Response text:', text);
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            throw new Error('Invalid JSON response: ' + text);
+                        }
+                    });
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                
+                if (data && data.success) {
+                    // Update local state
+                    isInList = data.inList === true;
+                    addToListBtn.setAttribute('data-in-list', isInList);
+                    
+                    // Update button state completely
+                    if (isInList) {
+                        this.innerHTML = '<i class="fas fa-check me-2"></i>Đã thêm';
+                        this.className = 'btn btn-success btn-sm btn-custom';
+                    } else {
+                        this.innerHTML = '<i class="fas fa-plus me-2"></i>Thêm vào sổ tay';
+                        this.className = 'btn btn-primary btn-sm btn-custom';
+                    }
+                    
+                    // Show success message
+                    if (typeof NihongoStudy !== 'undefined' && NihongoStudy.showToast) {
+                        NihongoStudy.showToast(data.message || 'Thành công', 'success');
+                    } else {
+                        alert(data.message || 'Thành công');
+                    }
+                } else {
+                    // Show error message
+                    const errorMsg = data && data.message ? data.message : 'Có lỗi xảy ra';
+                    if (typeof NihongoStudy !== 'undefined' && NihongoStudy.showToast) {
+                        NihongoStudy.showToast(errorMsg, 'danger');
+                    } else {
+                        alert(errorMsg);
+                    }
+                    // Restore original state
+                    this.innerHTML = originalHTML;
+                    this.className = originalClasses;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const errorMsg = 'Không thể kết nối đến server: ' + error.message;
+                if (typeof NihongoStudy !== 'undefined' && NihongoStudy.showToast) {
+                    NihongoStudy.showToast(errorMsg, 'danger');
+                } else {
+                    alert(errorMsg);
+                }
+                // Restore original state
+                this.innerHTML = originalHTML;
+                this.className = originalClasses;
+            })
+            .finally(() => {
+                this.disabled = wasDisabled;
+            });
+        });
+
+        // Audio playback for vocabulary word
+        document.getElementById('playAudioBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Check if already playing
+            if (this.classList.contains('playing')) {
+                NihongoStudy.stopSpeech(this);
+                return;
+            }
+            
+            const audioUrl = this.getAttribute('data-audio-url');
+            const word = this.getAttribute('data-word');
+            const romaji = this.getAttribute('data-romaji');
+            
+            // Use word if available, otherwise use romaji
+            const textToSpeak = word || romaji || '';
+            
+            if (textToSpeak) {
+                NihongoStudy.playAudio(audioUrl, textToSpeak, this);
             } else {
-                this.innerHTML = '<i class="fas fa-check me-2"></i>Đã thêm';
-                this.classList.replace('btn-primary', 'btn-success');
+                NihongoStudy.showToast('Không có văn bản để phát âm', 'warning');
             }
         });
 
-        // Audio playback
-        document.getElementById('playAudioBtn').addEventListener('click', function() {
-            this.classList.add('active');
-            setTimeout(() => this.classList.remove('active'), 1000);
-            alert('Chức năng phát âm sẽ được triển khai với audio file thực tế');
-        });
-
-        document.querySelectorAll('.btn-link').forEach(btn => {
+        // Audio playback for example sentences
+        document.querySelectorAll('.example-audio-btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
-                alert('Phát âm ví dụ câu');
+                e.stopPropagation();
+                
+                // Check if already playing
+                if (this.classList.contains('playing')) {
+                    NihongoStudy.stopSpeech(this);
+                    return;
+                }
+                
+                const sentence = this.getAttribute('data-sentence');
+                
+                if (sentence) {
+                    // Add playing class for visual feedback
+                    this.classList.add('playing');
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        icon.classList.remove('fa-volume-up');
+                        icon.classList.add('fa-volume-down', 'fa-spin');
+                    }
+                    
+                    NihongoStudy.playTextToSpeech(sentence, this);
+                } else {
+                    NihongoStudy.showToast('Không có câu để phát âm', 'warning');
+                }
             });
         });
     </script>

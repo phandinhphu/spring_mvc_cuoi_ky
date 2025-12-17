@@ -27,7 +27,7 @@
                                         <div class="search-box">
                                             <i class="fas fa-search"></i>
                                             <input type="text" class="form-control form-control-lg" name="q" 
-                                                   placeholder="Nhập từ cần tìm (Hiragana, Katakana, Kanji, hoặc tiếng Việt)..."
+                                                   placeholder="Nhập từ cần tìm (Hiragana, Katakana, Kanji, Romaji, hoặc tiếng Việt)..."
                                                    value="${query}">
                                         </div>
                                     </div>
@@ -37,6 +37,7 @@
                                             <option value="hiragana" ${searchType == 'hiragana' ? 'selected' : ''}>Hiragana</option>
                                             <option value="katakana" ${searchType == 'katakana' ? 'selected' : ''}>Katakana</option>
                                             <option value="kanji" ${searchType == 'kanji' ? 'selected' : ''}>Kanji</option>
+                                            <option value="romaji" ${searchType == 'romaji' ? 'selected' : ''}>Romaji</option>
                                             <option value="meaning" ${searchType == 'meaning' ? 'selected' : ''}>Tiếng Việt</option>
                                         </select>
                                     </div>
@@ -78,18 +79,29 @@
                                         <div class="col-lg-8">
                                             <div class="vocab-word">${vocab.word}</div>
                                             <div class="vocab-reading">
-                                                <span class="badge bg-info me-2">${vocab.hiragana}</span>
+                                                <c:if test="${not empty vocab.hiragana}">
+                                                    <span class="badge bg-info me-2">${vocab.hiragana}</span>
+                                                </c:if>
+                                                <c:if test="${not empty vocab.katakana}">
+                                                    <span class="badge bg-success me-2">${vocab.katakana}</span>
+                                                </c:if>
                                                 <c:if test="${not empty vocab.kanji}">
                                                     <span class="badge bg-secondary me-2">${vocab.kanji}</span>
                                                 </c:if>
-                                                <span class="text-muted">[${vocab.romaji}]</span>
+                                                <c:if test="${not empty vocab.romaji}">
+                                                    <span class="text-muted">[${vocab.romaji}]</span>
+                                                </c:if>
                                             </div>
                                             <div class="vocab-meaning">
                                                 <i class="fas fa-language me-2 text-primary"></i>${vocab.meaning}
                                             </div>
                                         </div>
                                         <div class="col-lg-4 text-lg-end">
-                                            <button class="audio-btn me-2" title="Phát âm">
+                                            <button class="audio-btn me-2" 
+                                                    title="Phát âm"
+                                                    data-audio-url="${vocab.audioUrl}"
+                                                    data-word="${vocab.word}"
+                                                    data-romaji="${vocab.romaji}">
                                                 <i class="fas fa-volume-up"></i>
                                             </button>
                                             <a href="${pageContext.request.contextPath}/vocabulary/detail/${vocab.id}" 
@@ -126,29 +138,36 @@
                                 
                                 <div class="mt-4">
                                     <h6 class="mb-3">Cách tìm kiếm hiệu quả:</h6>
-                                    <div class="row g-3">
-                                        <div class="col-md-3">
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-lg-2 col-md-4 col-sm-6">
                                             <div class="p-3 bg-light rounded">
                                                 <i class="fas fa-font text-primary fa-2x mb-2"></i>
                                                 <div class="small fw-semibold">Hiragana</div>
                                                 <div class="small text-muted">こんにちは</div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-lg-2 col-md-4 col-sm-6">
                                             <div class="p-3 bg-light rounded">
                                                 <i class="fas fa-language text-success fa-2x mb-2"></i>
                                                 <div class="small fw-semibold">Katakana</div>
                                                 <div class="small text-muted">コンピュータ</div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-lg-2 col-md-4 col-sm-6">
                                             <div class="p-3 bg-light rounded">
                                                 <i class="fas fa-book text-warning fa-2x mb-2"></i>
                                                 <div class="small fw-semibold">Kanji</div>
                                                 <div class="small text-muted">今日は</div>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-lg-2 col-md-4 col-sm-6">
+                                            <div class="p-3 bg-light rounded">
+                                                <i class="fas fa-keyboard text-danger fa-2x mb-2"></i>
+                                                <div class="small fw-semibold">Romaji</div>
+                                                <div class="small text-muted">konnichiwa</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-2 col-md-4 col-sm-6">
                                             <div class="p-3 bg-light rounded">
                                                 <i class="fas fa-comment text-info fa-2x mb-2"></i>
                                                 <div class="small fw-semibold">Tiếng Việt</div>
@@ -168,13 +187,44 @@
     <jsp:include page="../layouts/footer.jsp" />
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="${pageContext.request.contextPath}/resources/js/app.js"></script>
     <script>
-        // Audio playback simulation
+        // Wait for voices to be loaded
+        if ('speechSynthesis' in window) {
+            let voicesLoaded = false;
+            window.speechSynthesis.onvoiceschanged = function() {
+                voicesLoaded = true;
+            };
+            
+            // Load voices immediately if already available
+            if (window.speechSynthesis.getVoices().length > 0) {
+                voicesLoaded = true;
+            }
+        }
+
+        // Audio playback functionality
         document.querySelectorAll('.audio-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.classList.add('active');
-                setTimeout(() => this.classList.remove('active'), 1000);
-                alert('Chức năng phát âm sẽ được triển khai với audio file thực tế');
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Check if already playing
+                if (this.classList.contains('playing')) {
+                    NihongoStudy.stopSpeech(this);
+                    return;
+                }
+                
+                const audioUrl = this.getAttribute('data-audio-url');
+                const word = this.getAttribute('data-word');
+                const romaji = this.getAttribute('data-romaji');
+                
+                // Use word if available, otherwise use romaji
+                const textToSpeak = word || romaji || '';
+                
+                if (textToSpeak) {
+                    NihongoStudy.playAudio(audioUrl, textToSpeak, this);
+                } else {
+                    NihongoStudy.showToast('Không có văn bản để phát âm', 'warning');
+                }
             });
         });
     </script>

@@ -19,17 +19,110 @@ const NihongoStudy = {
         }, 3000);
     },
 
-    // Play audio
-    playAudio: function(audioUrl) {
-        if (!audioUrl || audioUrl === '' || audioUrl.startsWith('/audio/')) {
-            this.showToast('Chức năng phát âm sẽ được triển khai với audio file thực tế', 'info');
+    // Play audio from URL or use TTS
+    playAudio: function(audioUrl, text, buttonElement) {
+        // If audio URL exists and is valid, play it
+        if (audioUrl && audioUrl.trim() !== '' && !audioUrl.startsWith('/audio/')) {
+            const audio = new Audio(audioUrl);
+            audio.play().catch(err => {
+                console.error('Error playing audio:', err);
+                // Fallback to TTS if audio fails
+                this.playTextToSpeech(text, buttonElement);
+            });
             return;
         }
-        const audio = new Audio(audioUrl);
-        audio.play().catch(err => {
-            console.error('Error playing audio:', err);
-            this.showToast('Không thể phát âm thanh', 'danger');
-        });
+        
+        // Otherwise use Text-to-Speech
+        this.playTextToSpeech(text, buttonElement);
+    },
+
+    // Play text using Web Speech API (Text-to-Speech)
+    playTextToSpeech: function(text, buttonElement) {
+        if (!text || text.trim() === '') {
+            this.showToast('Không có văn bản để phát âm', 'warning');
+            return;
+        }
+
+        // Check if browser supports Speech Synthesis
+        if (!('speechSynthesis' in window)) {
+            this.showToast('Trình duyệt của bạn không hỗ trợ phát âm', 'warning');
+            return;
+        }
+
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        // Create speech utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Set language to Japanese
+        utterance.lang = 'ja-JP';
+        
+        // Set voice properties
+        utterance.rate = 0.9; // Slightly slower for clarity
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+
+        // Try to use Japanese voice if available
+        const voices = window.speechSynthesis.getVoices();
+        const japaneseVoice = voices.find(voice => 
+            voice.lang.startsWith('ja') || voice.name.includes('Japanese')
+        );
+        if (japaneseVoice) {
+            utterance.voice = japaneseVoice;
+        }
+
+        // Update button state
+        if (buttonElement) {
+            buttonElement.classList.add('playing');
+            const icon = buttonElement.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-volume-up');
+                icon.classList.add('fa-volume-down', 'fa-spin');
+            }
+        }
+
+        // Handle speech end
+        utterance.onend = function() {
+            if (buttonElement) {
+                buttonElement.classList.remove('playing');
+                const icon = buttonElement.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-volume-down', 'fa-spin');
+                    icon.classList.add('fa-volume-up');
+                }
+            }
+        };
+
+        // Handle speech error
+        utterance.onerror = function(event) {
+            console.error('Speech synthesis error:', event);
+            if (buttonElement) {
+                buttonElement.classList.remove('playing');
+                const icon = buttonElement.querySelector('i');
+                if (icon) {
+                    icon.classList.remove('fa-volume-down', 'fa-spin');
+                    icon.classList.add('fa-volume-up');
+                }
+            }
+            NihongoStudy.showToast('Không thể phát âm', 'danger');
+        };
+
+        // Speak
+        window.speechSynthesis.speak(utterance);
+    },
+
+    // Stop current speech
+    stopSpeech: function(buttonElement) {
+        window.speechSynthesis.cancel();
+        if (buttonElement) {
+            buttonElement.classList.remove('playing');
+            const icon = buttonElement.querySelector('i');
+            if (icon) {
+                icon.classList.remove('fa-volume-down', 'fa-spin');
+                icon.classList.add('fa-volume-up');
+            }
+        }
     },
 
     // Format time

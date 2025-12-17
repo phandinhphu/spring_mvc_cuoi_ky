@@ -67,10 +67,21 @@ public class UserVocabServiceImpl implements UserVocabService {
         UserVocab userVocab = new UserVocab();
         userVocab.setUserId(userId);
         userVocab.setVocabId(vocabId);
-        userVocab.setStatus("learning");
+        userVocab.setStatus("active");
         userVocab.setAddedAt(new Date());
         
         return userVocabRepository.save(userVocab);
+    }
+
+    @Override
+    public void removeVocabularyFromUser(Integer userId, Integer vocabId) {
+        Optional<UserVocab> userVocabOpt = userVocabRepository.findByUserIdAndVocabId(userId, vocabId);
+        
+        if (userVocabOpt.isPresent()) {
+            UserVocab userVocab = userVocabOpt.get();
+            userVocabRepository.deleteById(userVocab.getId());
+        }
+        // If not found, silently ignore (idempotent operation)
     }
 
     @Override

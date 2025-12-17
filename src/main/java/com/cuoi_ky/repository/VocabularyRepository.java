@@ -22,6 +22,7 @@ public interface VocabularyRepository extends BaseRepository<Vocabulary, Integer
     List<Vocabulary> findByHiragana(String hiragana);
     List<Vocabulary> findByKatakana(String katakana);
     List<Vocabulary> findByKanji(String kanji);
+    List<Vocabulary> findByRomaji(String romaji);
     
     /**
      * Get random vocabularies for practice

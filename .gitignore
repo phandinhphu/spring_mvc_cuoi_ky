@@ -1,26 +1,18 @@
-# Maven / Gradle
+# Maven
 /target/
-/build/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+.smarttomcat/
 
 # Eclipse
 .classpath
 .project
 .settings/
-.factorypath
-
-# IntelliJ IDEA
-*.iml
-/.idea/
 
 # Logs
 *.log
 
-# OS Files
+# OS
 .DS_Store
-Thumbs.db
-
-# Spring Boot
-spring-boot-devtools.properties
-
-# Others
-*.tmp
