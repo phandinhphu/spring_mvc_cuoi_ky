@@ -1,7 +1,9 @@
 package com.cuoi_ky.service.impl;
 
+import com.cuoi_ky.model.PracticeHistory;
 import com.cuoi_ky.model.UserVocab;
 import com.cuoi_ky.model.Vocabulary;
+import com.cuoi_ky.repository.PracticeHistoryRepository;
 import com.cuoi_ky.repository.UserVocabRepository;
 import com.cuoi_ky.repository.VocabularyRepository;
 import com.cuoi_ky.service.UserVocabService;
@@ -11,7 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -24,12 +28,15 @@ public class UserVocabServiceImpl implements UserVocabService {
 
     private final UserVocabRepository userVocabRepository;
     private final VocabularyRepository vocabularyRepository;
+    private final PracticeHistoryRepository practiceHistoryRepository;
 
     @Autowired
     public UserVocabServiceImpl(UserVocabRepository userVocabRepository,
-                                VocabularyRepository vocabularyRepository) {
+                                VocabularyRepository vocabularyRepository,
+                                PracticeHistoryRepository practiceHistoryRepository) {
         this.userVocabRepository = userVocabRepository;
         this.vocabularyRepository = vocabularyRepository;
+        this.practiceHistoryRepository = practiceHistoryRepository;
     }
 
     @Override
@@ -116,4 +123,28 @@ public class UserVocabServiceImpl implements UserVocabService {
     public long getLearningCount(Integer userId) {
         return userVocabRepository.countByUserIdAndStatus(userId, "learning");
     }
+    
+    @Override
+    public List<Map<String, Object>> getUserActiveVocabulariesWithDetails(Integer userId) {
+    	List<UserVocab> activeVocabularies = userVocabRepository.findByUserIdAndStatus(userId, "active");
+    	List<Map<String, Object>> vocabularies = new ArrayList<>();
+    	
+    	for (UserVocab userVocab : activeVocabularies) {
+    		vocabularyRepository.findById(userVocab.getVocabId()).ifPresent(vocab -> {
+                Map<String, Object> map = new HashMap<>();
+                // Lưu id của bảng user_vocab để sau này ghi vào practice_history
+                map.put("userVocabId", userVocab.getId()); 
+                map.put("vocabulary", vocab);
+                vocabularies.add(map);
+            });
+        }
+    	return vocabularies;
+    }
+
+	@Override
+	public void saveHistoryPractice(List<PracticeHistory> histories) {
+		for (PracticeHistory history : histories) {
+	        practiceHistoryRepository.save(history);
+	    }
+	}
 }

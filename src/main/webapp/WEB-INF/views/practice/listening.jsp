@@ -22,7 +22,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h5 class="mb-0">Câu hỏi <span id="currentQ">1</span>/10</h5>
+                                    <h5>Câu hỏi <span id="currentQ"></span>/<span id="totalQ"></span></h5>
                                 </div>
                                 <div>
                                     <span class="badge bg-primary fs-5">Điểm: <span id="score">0</span></span>
@@ -57,32 +57,8 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="d-grid gap-3" id="optionsContainer">
-                                <button class="quiz-option" data-answer="A">
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-primary me-3 fs-5">A</span>
-                                        <span class="fs-5">Xin chào</span>
-                                    </div>
-                                </button>
-                                <button class="quiz-option" data-answer="B">
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-primary me-3 fs-5">B</span>
-                                        <span class="fs-5">Cảm ơn</span>
-                                    </div>
-                                </button>
-                                <button class="quiz-option" data-answer="C">
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-primary me-3 fs-5">C</span>
-                                        <span class="fs-5">Tạm biệt</span>
-                                    </div>
-                                </button>
-                                <button class="quiz-option" data-answer="D">
-                                    <div class="d-flex align-items-center">
-                                        <span class="badge bg-primary me-3 fs-5">D</span>
-                                        <span class="fs-5">Xin lỗi</span>
-                                    </div>
-                                </button>
+                            <!-- các đáp án được js sinh tại đây -->
                             </div>
-
                             <div class="mt-4 text-center">
                                 <button class="btn btn-success btn-lg btn-custom" id="nextBtn" disabled>
                                     Câu tiếp theo <i class="fas fa-arrow-right ms-2"></i>
@@ -98,75 +74,133 @@
     <jsp:include page="../layouts/footer.jsp" />
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const questions = [
-            { audio: 'konnichiwa', correct: 'A', options: ['Xin chào', 'Cảm ơn', 'Tạm biệt', 'Xin lỗi'] },
-            { audio: 'arigatou', correct: 'B', options: ['Xin chào', 'Cảm ơn', 'Tạm biệt', 'Xin lỗi'] },
-            { audio: 'sayounara', correct: 'C', options: ['Xin chào', 'Cảm ơn', 'Tạm biệt', 'Xin lỗi'] }
-        ];
-
-        let currentQuestion = 0;
-        let score = 0;
-        let selectedAnswer = null;
-
-        const playBtn = document.getElementById('playBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const optionsContainer = document.getElementById('optionsContainer');
-        const progressBar = document.getElementById('progressBar');
-        const scoreSpan = document.getElementById('score');
-        const currentQSpan = document.getElementById('currentQ');
-
-        playBtn.addEventListener('click', function() {
-            this.classList.add('active');
-            setTimeout(() => this.classList.remove('active'), 1000);
-            alert('Phát âm: ' + questions[currentQuestion].audio);
-        });
-
-        optionsContainer.addEventListener('click', function(e) {
-            const option = e.target.closest('.quiz-option');
-            if (!option || selectedAnswer) return;
-
-            selectedAnswer = option.dataset.answer;
-            const correct = questions[currentQuestion].correct;
-
-            document.querySelectorAll('.quiz-option').forEach(opt => {
-                opt.disabled = true;
-                if (opt.dataset.answer === correct) {
-                    opt.classList.add('correct');
-                }
-                if (opt.dataset.answer === selectedAnswer && selectedAnswer !== correct) {
-                    opt.classList.add('incorrect');
-                }
-            });
-
-            if (selectedAnswer === correct) {
-                score += 10;
-                scoreSpan.textContent = score;
-            }
-
-            nextBtn.disabled = false;
-        });
-
-        nextBtn.addEventListener('click', function() {
-            currentQuestion++;
-            if (currentQuestion >= questions.length) {
-                alert('Hoàn thành! Điểm của bạn: ' + score);
-                window.location.href = '${pageContext.request.contextPath}/practice/';
-                return;
-            }
-
-            selectedAnswer = null;
-            nextBtn.disabled = true;
-            
-            document.querySelectorAll('.quiz-option').forEach((opt, index) => {
-                opt.disabled = false;
-                opt.classList.remove('correct', 'incorrect', 'selected');
-                opt.querySelector('span:last-child').textContent = questions[currentQuestion].options[index];
-            });
-
-            currentQSpan.textContent = currentQuestion + 1;
-            progressBar.style.width = ((currentQuestion + 1) / questions.length * 100) + '%';
-        });
-    </script>
+	<script>
+    	// 1. Dữ liệu từ Server
+	    const initialVocabs = [
+	        <c:forEach items="${vocabularies}" var="v" varStatus="status">
+	        { 
+	            userVocabId: ${v.userVocabId}, 
+	            word: "${v.vocabulary.word}", 
+	            meaning: "${v.vocabulary.meaning}", 
+	            reading: "${v.vocabulary.hiragana}", 
+	            romaji: "${v.vocabulary.romaji}" 
+	        }${!status.last ? ',' : ''}
+	        </c:forEach>
+	    ];
+	
+	    const distractorPool = [
+	        <c:forEach items="${distractors}" var="d" varStatus="status">
+	            { meaning: "${d.meaning}" }${!status.last ? ',' : ''}
+	        </c:forEach>
+	    ];
+	
+	    // 2. Khởi tạo trạng thái buổi tập
+	    let stats = {};
+	    initialVocabs.forEach(item => {
+	        stats[item.userVocabId] = {
+	            userVocabId: item.userVocabId,
+	            word: item.word,
+	            meaning: item.meaning,
+	            correctCount: 0,
+	            wrongCount: 0,
+	            mode: 'listening'
+	        };
+	    });
+	
+	    let queue = [...initialVocabs]; 
+	    let score = 0;
+	    let currentItem = null;
+	    const totalOriginal = initialVocabs.length;
+	
+	    document.getElementById('totalQ').textContent = totalOriginal;
+	
+	    function initQuiz() {
+	        if (queue.length === 0) {
+	            submitResults(Object.values(stats));
+	            return;
+	        }
+	        renderQuestion();
+	    }
+	
+	    function renderQuestion() {
+	        currentItem = queue[0];
+	        
+	        // Cập nhật số thứ tự câu hỏi dựa trên số từ đã hoàn thành (xóa khỏi queue)
+	        const completedCount = totalOriginal - queue.length;
+	        document.getElementById('currentQ').textContent = completedCount + 1;
+	        document.getElementById('progressBar').style.width = ((completedCount + 1) / totalOriginal * 100) + '%';
+	        
+	        // Tạo 4 phương án
+	        let options = [currentItem.meaning];
+	        while(options.length < 4) {
+	            let randomDistractor = distractorPool[Math.floor(Math.random() * distractorPool.length)].meaning;
+	            if(!options.includes(randomDistractor)) options.push(randomDistractor);
+	        }
+	        options.sort(() => Math.random() - 0.5);
+	
+	        const container = document.getElementById('optionsContainer');
+	        container.innerHTML = options.map((opt, i) => `
+	            <button class="quiz-option" onclick="checkAnswer('\${opt}', this)">
+	                <div class="d-flex align-items-center">
+	                    <span class="badge bg-primary me-3 fs-5">\${String.fromCharCode(65 + i)}</span>
+	                    <span class="fs-5">\${opt}</span>
+	                </div>
+	            </button>
+	        `).join('');
+	        
+	        document.getElementById('nextBtn').disabled = true;
+	    }
+	
+	    function checkAnswer(selected, btnElement) {
+	        const isCorrect = (selected === currentItem.meaning);
+	        const vocabId = currentItem.userVocabId;
+	        const allButtons = document.querySelectorAll('.quiz-option');
+	        
+	        allButtons.forEach(btn => {
+	            btn.disabled = true;
+	            if (btn.querySelector('span:last-child').textContent === currentItem.meaning) {
+	                btn.classList.add('correct');
+	            }
+	        });
+	
+	        if (isCorrect) {
+	            // Chỉ cộng điểm nếu từ này chưa bao giờ bị làm sai trong phiên này
+	            if (stats[vocabId].wrongCount === 0) {
+	                score += 1;
+	                document.getElementById('score').textContent = score;
+	            }
+	            stats[vocabId].correctCount++;
+	            queue.shift(); // Xong câu này, xóa khỏi hàng đợi
+	        } else {
+	            stats[vocabId].wrongCount++;
+	            btnElement.classList.add('incorrect');
+	            // Đưa câu sai xuống cuối để làm lại
+	            queue.push(queue.shift());
+	        }
+	        document.getElementById('nextBtn').disabled = false;
+	    }
+	
+	    // TTS (Phát âm)
+	    document.getElementById('playBtn').addEventListener('click', () => {
+	        const msg = new SpeechSynthesisUtterance(currentItem.word);
+	        msg.lang = 'ja-JP';
+	        window.speechSynthesis.speak(msg);
+	    });
+	
+	    document.getElementById('nextBtn').addEventListener('click', initQuiz);
+	
+	    function submitResults(finalData) {
+	        document.getElementById('resultsJson').value = JSON.stringify(finalData);
+	        document.getElementById('totalScore').value = score;
+	        document.getElementById('resultForm').submit();
+	    }
+	
+	    initQuiz();
+	</script>
+	
+	<form id="resultForm" action="${pageContext.request.contextPath}/practice/save-result" method="POST" style="display: none;">
+	    <input type="hidden" name="resultsJson" id="resultsJson">
+	    <input type="hidden" name="totalScore" id="totalScore">
+	</form>
 </body>
 </html>
