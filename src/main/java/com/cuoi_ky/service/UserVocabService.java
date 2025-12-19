@@ -1,8 +1,10 @@
 package com.cuoi_ky.service;
 
+import com.cuoi_ky.model.PracticeHistory;
 import com.cuoi_ky.model.UserVocab;
 import com.cuoi_ky.model.Vocabulary;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -51,4 +53,14 @@ public interface UserVocabService {
     long getTotalVocabularyCount(Integer userId);
     long getMasteredCount(Integer userId);
     long getLearningCount(Integer userId);
+    
+    /**
+     * Get user vocabularies by active status, return detail list vocabularies
+     */
+    List<Map<String, Object>> getUserActiveVocabulariesWithDetails(Integer userId);
+    
+    /**
+     * save history practice
+     */
+    public void saveHistoryPractice(List<PracticeHistory> histories);
 }
