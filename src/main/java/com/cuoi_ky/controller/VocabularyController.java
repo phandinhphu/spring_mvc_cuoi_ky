@@ -1,6 +1,7 @@
 package com.cuoi_ky.controller;
 
 import com.cuoi_ky.model.Vocabulary;
+import com.cuoi_ky.dto.UserVocabularyDTO;
 import com.cuoi_ky.model.Example;
 import com.cuoi_ky.service.VocabularyService;
 import com.cuoi_ky.service.ExampleService;
@@ -100,7 +101,7 @@ public class VocabularyController {
         Integer userId = (Integer) session.getAttribute("userId");
         
         // Get user's vocabulary list with full details
-        List<Vocabulary> myVocabs = userVocabService.getUserVocabulariesWithDetails(userId);
+        List<UserVocabularyDTO> myVocabs = userVocabService.getUserVocabulariesWithDetails(userId);
         
         model.addAttribute("vocabularies", myVocabs);
         model.addAttribute("totalWords", myVocabs.size());

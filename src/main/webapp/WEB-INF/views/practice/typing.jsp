@@ -22,7 +22,7 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h5 class="mb-0">Câu hỏi <span id="currentQ">1</span>/10</h5>
+                                    <h5 class="mb-0">Câu hỏi <span id="currentQ">1</span>/<span id="totalQ">${vocabularies.size()}</span></h5>
                                 </div>
                                 <div>
                                     <span class="badge bg-primary fs-5">Điểm: <span id="score">0</span></span>
@@ -98,17 +98,33 @@
     </main>
 
     <jsp:include page="../layouts/footer.jsp" />
+    
+    <!-- Data từ server (hidden) -->
+    <script type="application/json" id="vocabularyData">
+        [
+            <c:forEach var="vocab" items="${vocabularies}" varStatus="status">
+            {
+                "vocabId": ${vocab.vocabId},
+                "userVocabId": ${vocab.userVocabId},
+                "word": "${vocab.word}",
+                "meaning": "${vocab.meaning}",
+                "romaji": "${not empty vocab.romaji ? vocab.romaji : ''}"
+            }<c:if test="${not status.last}">,</c:if>
+            </c:forEach>
+        ]
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const questions = [
-            { word: 'こんにちは', meaning: 'Xin chào', romaji: 'konnichiwa', hint: 'kon...' },
-            { word: 'ありがとう', meaning: 'Cảm ơn', romaji: 'arigatou', hint: 'ari...' },
-            { word: 'さようなら', meaning: 'Tạm biệt', romaji: 'sayounara', hint: 'say...' }
-        ];
+        // Lấy dữ liệu từ controller
+        const questions = JSON.parse(document.getElementById('vocabularyData').textContent);
 
         let currentQuestion = 0;
-        let score = 0;
+        let currentScore = 0;
+        
+        // Mảng lưu kết quả để gửi lên server
+        // Mỗi phần tử sẽ lưu: userVocabId, correctCount, wrongCount, mode
+        const results = [];
 
         const vocabWord = document.getElementById('vocabWord');
         const vocabMeaning = document.getElementById('vocabMeaning');
@@ -128,7 +144,12 @@
             const q = questions[currentQuestion];
             vocabWord.textContent = q.word;
             vocabMeaning.textContent = q.meaning;
-            hintText.textContent = q.hint;
+            
+            // Tạo hint từ 3 ký tự đầu của romaji
+            const romajiText = q.romaji || '';
+            const hintText = romajiText.length > 3 ? romajiText.substring(0, 3) + '...' : romajiText + '...';
+            document.getElementById('hintText').textContent = hintText;
+            
             answerInput.value = '';
             answerInput.classList.remove('is-valid', 'is-invalid');
             hintBox.classList.add('d-none');
@@ -145,14 +166,21 @@
             if (userAnswer === correctAnswer) {
                 answerInput.classList.add('is-valid');
                 answerInput.classList.remove('is-invalid');
-                score += 10;
-                scoreSpan.textContent = score;
+                currentScore += 10;
+                scoreSpan.textContent = currentScore;
+                
+                // Lưu kết quả đúng
+                results.push({
+                    userVocabId: questions[currentQuestion].userVocabId,
+                    correctCount: 1,
+                    wrongCount: 0,
+                    mode: "fill"
+                });
                 
                 setTimeout(() => {
                     currentQuestion++;
                     if (currentQuestion >= questions.length) {
-                        alert('Hoàn thành! Điểm của bạn: ' + score);
-                        window.location.href = '${pageContext.request.contextPath}/practice/';
+                        finishPractice();
                     } else {
                         loadQuestion();
                     }
@@ -162,25 +190,78 @@
                 answerInput.classList.remove('is-valid');
                 feedback.textContent = 'Sai rồi! Đáp án đúng là: ' + questions[currentQuestion].romaji;
                 feedback.style.display = 'block';
+                
+                // Lưu kết quả sai
+                results.push({
+                    userVocabId: questions[currentQuestion].userVocabId,
+                    correctCount: 0,
+                    wrongCount: 1,
+                    mode: "fill"
+                });
+                
+                setTimeout(() => {
+                    currentQuestion++;
+                    if (currentQuestion >= questions.length) {
+                        finishPractice();
+                    } else {
+                        loadQuestion();
+                    }
+                }, 1000);
             }
         });
 
         skipBtn.addEventListener('click', function() {
+            // Lưu kết quả bỏ qua (tính là sai)
+            results.push({
+                userVocabId: questions[currentQuestion].userVocabId,
+                correctCount: 0,
+                wrongCount: 1,
+                mode: "fill"
+            });
+            
             currentQuestion++;
             if (currentQuestion >= questions.length) {
-                alert('Hoàn thành! Điểm của bạn: ' + score);
-                window.location.href = '${pageContext.request.contextPath}/practice/';
+                finishPractice();
             } else {
                 loadQuestion();
             }
         });
+        
+        // Hàm hoàn thành bài luyện tập và chuyển đến trang kết quả
+        function finishPractice() {
+            // Tạo form để gửi kết quả lên server
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '${pageContext.request.contextPath}/practice/save-result';
+            
+            // Chuyển đổi results thành JSON
+            const resultsInput = document.createElement('input');
+            resultsInput.type = 'hidden';
+            resultsInput.name = 'resultsJson';
+            resultsInput.value = JSON.stringify(results);
+            form.appendChild(resultsInput);
+            
+            // Thêm tổng điểm
+            const scoreInput = document.createElement('input');
+            scoreInput.type = 'hidden';
+            scoreInput.name = 'totalScore';
+            scoreInput.value = currentScore;
+            form.appendChild(scoreInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
 
         hintBtn.addEventListener('click', function() {
             hintBox.classList.toggle('d-none');
         });
 
         audioBtn.addEventListener('click', function() {
-            alert('Phát âm: ' + questions[currentQuestion].romaji);
+            // Tạo đối tượng Speech Synthesis để phát âm tiếng Nhật
+            const utterance = new SpeechSynthesisUtterance(questions[currentQuestion].word);
+            utterance.lang = 'ja-JP'; // Ngôn ngữ tiếng Nhật
+            utterance.rate = 0.8; // Tốc độ đọc chậm hơn một chút
+            window.speechSynthesis.speak(utterance);
         });
 
         answerInput.addEventListener('keypress', function(e) {

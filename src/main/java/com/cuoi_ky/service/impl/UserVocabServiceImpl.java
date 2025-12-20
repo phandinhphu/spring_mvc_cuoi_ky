@@ -1,5 +1,6 @@
 package com.cuoi_ky.service.impl;
 
+import com.cuoi_ky.dto.UserVocabularyDTO;
 import com.cuoi_ky.model.PracticeHistory;
 import com.cuoi_ky.model.UserVocab;
 import com.cuoi_ky.model.Vocabulary;
@@ -45,13 +46,26 @@ public class UserVocabServiceImpl implements UserVocabService {
     }
 
     @Override
-    public List<Vocabulary> getUserVocabulariesWithDetails(Integer userId) {
+    public List<UserVocabularyDTO> getUserVocabulariesWithDetails(Integer userId) {
         List<UserVocab> userVocabs = userVocabRepository.findByUserId(userId);
-        List<Vocabulary> vocabularies = new ArrayList<>();
+        List<UserVocabularyDTO> vocabularies = new ArrayList<>();
         
         for (UserVocab userVocab : userVocabs) {
-            Optional<Vocabulary> vocabOpt = vocabularyRepository.findById(userVocab.getVocabId());
-            vocabOpt.ifPresent(vocabularies::add);
+			Optional<Vocabulary> vocabOpt = vocabularyRepository.findById(userVocab.getVocabId());
+			vocabOpt.ifPresent(vocab -> {
+				UserVocabularyDTO dto = new UserVocabularyDTO();
+				dto.setUserVocabId(userVocab.getId());
+				dto.setVocabId(vocab.getId());
+				dto.setWord(vocab.getWord());
+				dto.setMeaning(vocab.getMeaning());
+				dto.setRomaji(vocab.getRomaji());
+				dto.setHiragana(vocab.getHiragana());
+				dto.setKatakana(vocab.getKatakana());
+				dto.setKanji(vocab.getKanji());
+				dto.setAudioUrl(vocab.getAudioUrl());
+				dto.setStatus(userVocab.getStatus());
+				vocabularies.add(dto);
+			});
         }
         
         return vocabularies;
@@ -144,7 +158,44 @@ public class UserVocabServiceImpl implements UserVocabService {
 	@Override
 	public void saveHistoryPractice(List<PracticeHistory> histories) {
 		for (PracticeHistory history : histories) {
-	        practiceHistoryRepository.save(history);
+            PracticeHistory exitHistory = practiceHistoryRepository.findByUserVocabId(history.getUserVocabId());
+            if (exitHistory != null) {
+                // Cập nhật lại số lần đúng/sai
+                int newCorrectCount = exitHistory.getCorrectCount() + history.getCorrectCount();
+                int newWrongCount = exitHistory.getWrongCount() + history.getWrongCount();
+
+                practiceHistoryRepository.updateCorrectCount(history.getUserVocabId(), newCorrectCount);
+                practiceHistoryRepository.updateWrongCount(history.getUserVocabId(), newWrongCount);
+            } else {
+                // Lưu mới nếu chưa có lịch sử
+                practiceHistoryRepository.save(history);
+            }
 	    }
+	}
+
+	@Override
+	public List<UserVocabularyDTO> getRandomUserVocabularies(Integer userId, int limit) {
+		List<UserVocab> userVocabs = userVocabRepository.findRandomByUserId(userId, limit);
+		List<UserVocabularyDTO> vocabularies = new ArrayList<>();
+		
+		for (UserVocab userVocab : userVocabs) {
+			Optional<Vocabulary> vocabOpt = vocabularyRepository.findById(userVocab.getVocabId());
+			vocabOpt.ifPresent(vocab -> {
+				UserVocabularyDTO dto = new UserVocabularyDTO();
+				dto.setUserVocabId(userVocab.getId());
+				dto.setVocabId(vocab.getId());
+				dto.setWord(vocab.getWord());
+				dto.setMeaning(vocab.getMeaning());
+				dto.setRomaji(vocab.getRomaji());
+				dto.setHiragana(vocab.getHiragana());
+				dto.setKatakana(vocab.getKatakana());
+				dto.setKanji(vocab.getKanji());
+				dto.setAudioUrl(vocab.getAudioUrl());
+				dto.setStatus(userVocab.getStatus());
+				vocabularies.add(dto);
+			});
+		}
+		
+		return vocabularies;
 	}
 }

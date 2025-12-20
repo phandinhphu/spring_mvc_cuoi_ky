@@ -12,12 +12,12 @@ public interface PracticeHistoryRepository extends BaseRepository<PracticeHistor
     /**
      * Find practice history by user vocab ID
      */
-    List<PracticeHistory> findByUserVocabId(Integer userVocabId);
+    PracticeHistory findByUserVocabId(Integer userVocabId);
     
     /**
      * Find practice history by user vocab ID and mode
      */
-    List<PracticeHistory> findByUserVocabIdAndMode(Integer userVocabId, String mode);
+    PracticeHistory findByUserVocabIdAndMode(Integer userVocabId, String mode);
     
     /**
      * Find recent practice history
@@ -28,4 +28,14 @@ public interface PracticeHistoryRepository extends BaseRepository<PracticeHistor
      * Find practice history by date range
      */
     List<PracticeHistory> findByDateRange(Date startDate, Date endDate);
+
+    /**
+     * Update practice history record correct_count
+     */
+    void updateCorrectCount(Integer userVocabId, int correctCount);
+
+    /**
+     * Update practice history record wrong_count
+     */
+    void updateWrongCount(Integer userVocabId, int wrongCount);
 }
