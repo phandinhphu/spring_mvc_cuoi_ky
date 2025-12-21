@@ -71,4 +71,29 @@ public class UserServiceImpl implements UserService {
     public boolean isEmailExists(String email) {
         return userRepository.existsByEmail(email);
     }
+
+	@Override
+	public boolean updateProfile(Integer id, String fullname) {
+		return userRepository.updateProfile(id, fullname);
+	}
+
+	@Override
+	public boolean changePassword(Integer id, String oldPassword, String newPassword) {
+		Optional<User> userOpt = userRepository.findById(id);
+		
+		if(userOpt.isPresent()) {
+			User user = userOpt.get();
+			
+			if(user.getPassword().equals(oldPassword)) {
+				userRepository.changePassword(id, newPassword);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean updateAvatar(Integer id, String avatar) {
+		return userRepository.updateAvatar(id, avatar);
+	}
 }

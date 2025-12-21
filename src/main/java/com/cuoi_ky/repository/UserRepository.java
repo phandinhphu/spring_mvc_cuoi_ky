@@ -27,4 +27,19 @@ public interface UserRepository extends BaseRepository<User, Integer> {
      * Check if email exists
      */
     boolean existsByEmail(String email);
+    
+    /**
+     * Update profile
+     */
+    public boolean updateProfile(Integer id, String fullname);
+    
+    /**
+     * Change password
+     */
+    public boolean changePassword(Integer id, String password);
+    
+    /**
+     * Update avatar
+     */
+    public boolean updateAvatar(Integer id, String avatar);
 }

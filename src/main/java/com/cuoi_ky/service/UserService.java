@@ -37,4 +37,19 @@ public interface UserService {
      * Check if email exists
      */
     boolean isEmailExists(String email);
+    
+    /**
+     * Update profile
+     */
+    boolean updateProfile(Integer id, String fullname);
+    
+    /**
+     * Change password
+     */
+    boolean changePassword(Integer id, String oldPassword, String newPassword);
+    
+    /**
+     * Update avatar
+     */
+    boolean updateAvatar(Integer id, String avatar);
 }
