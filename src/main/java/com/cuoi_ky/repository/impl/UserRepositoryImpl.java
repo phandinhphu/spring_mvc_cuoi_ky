@@ -47,4 +47,38 @@ public class UserRepositoryImpl extends BaseRepositoryImpl<User, Integer>
         query.setParameter("email", email);
         return query.getSingleResult() > 0;
     }
+
+	@Override
+	public boolean updateProfile(Integer id, String fullname) {
+		String hql = "UPDATE User u SET u.fullname = :fullname WHERE u.id = :id";
+		
+		Query query = getSession().createQuery(hql);
+		query.setParameter("fullname", fullname);
+		query.setParameter("id", id);
+		
+		return query.executeUpdate() > 0;
+ 	}
+
+	@Override
+	public boolean changePassword(Integer id, String password) {
+		String hql = "UPDATE User u SET u.password = :password WHERE u.id = :id";
+		
+		Query query = getSession().createQuery(hql);
+		query.setParameter("password", password);
+		query.setParameter("id", id);
+		
+		return query.executeUpdate() > 0;
+		
+	}
+
+	@Override
+	public boolean updateAvatar(Integer id, String avatar) {
+		String hql = "UPDATE User u SET u.avatar = :avatar WHERE u.id = :id";
+		
+		Query query = getSession().createQuery(hql);
+		query.setParameter("avatar", avatar);
+		query.setParameter("id", id);
+		
+		return query.executeUpdate() > 0;
+	}
 }

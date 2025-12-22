@@ -58,7 +58,7 @@
                         <i class="fas fa-user-circle me-1"></i>${username != null ? username : 'Người dùng'}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Cài đặt</a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile/"><i class="fas fa-cog me-2"></i>Cài đặt</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="${pageContext.request.contextPath}/auth/logout">
                             <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất

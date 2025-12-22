@@ -62,6 +62,7 @@ public class AuthController {
             User user = userOpt.get();
             session.setAttribute("userId", user.getId());
             session.setAttribute("username", user.getUsername());
+            session.setAttribute("user", user);
             return "redirect:/dashboard";
         }
         
