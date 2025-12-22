@@ -1,5 +1,6 @@
 package com.cuoi_ky.service;
 
+import com.cuoi_ky.dto.UserVocabularyDTO;
 import com.cuoi_ky.model.PracticeHistory;
 import com.cuoi_ky.model.UserVocab;
 import com.cuoi_ky.model.Vocabulary;
@@ -20,7 +21,7 @@ public interface UserVocabService {
     /**
      * Get user's vocabulary list with full vocabulary details
      */
-    List<Vocabulary> getUserVocabulariesWithDetails(Integer userId);
+    List<UserVocabularyDTO> getUserVocabulariesWithDetails(Integer userId);
     
     /**
      * Get user vocabularies by status
@@ -63,4 +64,9 @@ public interface UserVocabService {
      * save history practice
      */
     public void saveHistoryPractice(List<PracticeHistory> histories);
+    
+    /**
+     * Get random user vocabularies (10)
+     */
+    List<UserVocabularyDTO> getRandomUserVocabularies(Integer userId, int limit);
 }

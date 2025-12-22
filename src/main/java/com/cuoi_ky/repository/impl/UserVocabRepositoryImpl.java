@@ -59,4 +59,13 @@ public class UserVocabRepositoryImpl extends BaseRepositoryImpl<UserVocab, Integ
         query.setParameter("status", status);
         return query.getSingleResult();
     }
+
+	@Override
+	public List<UserVocab> findRandomByUserId(Integer userId, int limit) {
+		String hql = "FROM UserVocab uv WHERE uv.userId = :userId ORDER BY RAND()";
+		Query<UserVocab> query = getSession().createQuery(hql, UserVocab.class);
+		query.setParameter("userId", userId);
+		query.setMaxResults(limit);
+		return query.getResultList();
+	}
 }

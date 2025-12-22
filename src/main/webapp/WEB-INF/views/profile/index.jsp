@@ -20,12 +20,12 @@
                 <div class="col-md-4">
                     <div class="card shadow-sm text-center p-4">
                         <div class="mb-3">
-                            <img src="${pageContext.request.contextPath}/resources/images/${user.avatar}" 
+                            <img src="${pageContext.request.contextPath}/resources/images/${not empty user.avatar ? user.avatar : 'default-avatar.png'}" 
                                  class="rounded-circle img-thumbnail" 
                                  style="width: 150px; height: 150px; object-fit: cover;" 
                                  alt="Avatar">
                         </div>
-                        <h4 class="mb-1">${user.fullname}</h4>
+                        <h4 class="mb-1">${not empty user.fullname ? user.fullname : user.username}</h4>
                         <p class="text-muted">@${user.username}</p>
                         <p class="text-muted">
 						    Ngày tạo: <fmt:formatDate value="${user.createdAt}" pattern="dd/MM/yyyy" />
@@ -64,7 +64,7 @@
                                 <form action="${pageContext.request.contextPath}/profile/update-profile" method="post">
                                     <div class="mb-3">
                                         <label class="form-label">Tên hiển thị</label>
-                                        <input type="text" name="fullname" class="form-control" value="${user.fullname}">
+                                        <input type="text" name="fullname" class="form-control" value="${not empty user.fullname ? user.fullname : user.username}">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Email</label>

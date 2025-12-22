@@ -33,4 +33,9 @@ public interface UserVocabRepository extends BaseRepository<UserVocab, Integer> 
      * Count vocabularies by user ID and status
      */
     long countByUserIdAndStatus(Integer userId, String status);
+    
+    /**
+     * Find random vocabularies for a user
+     */
+    List<UserVocab> findRandomByUserId(Integer userId, int limit);
 }

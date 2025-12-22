@@ -4,6 +4,7 @@ import com.cuoi_ky.model.User;
 import com.cuoi_ky.repository.UserRepository;
 import com.cuoi_ky.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,19 +20,21 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public User registerUser(User user) {
         // Set created date
         user.setCreatedAt(new Date());
-        
-        // TODO: Hash password before saving (implement password encoding)
-        // For now, saving as plain text - should be replaced with BCryptPasswordEncoder
+
+		// Hash the password before saving
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         
         return userRepository.save(user);
     }
@@ -42,9 +45,7 @@ public class UserServiceImpl implements UserService {
         
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // TODO: Compare with hashed password
-            // For now, simple string comparison
-            if (user.getPassword().equals(password)) {
+            if (passwordEncoder.matches(password, user.getPassword())) {
                 return Optional.of(user);
             }
         }
@@ -84,8 +85,8 @@ public class UserServiceImpl implements UserService {
 		if(userOpt.isPresent()) {
 			User user = userOpt.get();
 			
-			if(user.getPassword().equals(oldPassword)) {
-				userRepository.changePassword(id, newPassword);
+			if(passwordEncoder.matches(oldPassword, user.getPassword())) {
+				userRepository.changePassword(id, passwordEncoder.encode(newPassword));
 				return true;
 			}
 		}

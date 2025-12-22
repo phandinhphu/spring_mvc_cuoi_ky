@@ -98,7 +98,7 @@
                                         <button class="btn btn-outline-primary btn-sm" title="Phát âm">
                                             <i class="fas fa-volume-up"></i>
                                         </button>
-                                        <a href="${pageContext.request.contextPath}/vocabulary/detail/${vocab.id}" 
+                                        <a href="${pageContext.request.contextPath}/vocabulary/detail/${vocab.vocabId}" 
                                            class="btn btn-outline-info btn-sm" title="Chi tiết">
                                             <i class="fas fa-info-circle"></i>
                                         </a>

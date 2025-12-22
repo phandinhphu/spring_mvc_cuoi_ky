@@ -39,8 +39,6 @@ public class User {
         this.password = password;
         this.email = email;
         this.createdAt = createdAt;
-        this.avatar = "default-avatar.png";
-        this.fullname = username;
     }
 
     public Integer getId() {

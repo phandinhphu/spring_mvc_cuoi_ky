@@ -1,10 +1,14 @@
 package com.cuoi_ky.controller;
 
+import com.cuoi_ky.dto.UserVocabularyDTO;
 import com.cuoi_ky.model.PracticeHistory;
 import com.cuoi_ky.model.Vocabulary;
 import com.cuoi_ky.service.VocabularyService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
 import com.cuoi_ky.service.UserVocabService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,6 +31,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/practice")
+@Slf4j
 public class PracticeController {
 
     private final VocabularyService vocabularyService;
@@ -41,6 +46,7 @@ public class PracticeController {
 
     @GetMapping("/")
     public String practice(Model model, HttpSession session) {
+    	System.out.println("Accessing /practice/");
         Integer userId = (Integer) session.getAttribute("userId");
         
         long totalWords = userVocabService.getTotalVocabularyCount(userId);
@@ -55,12 +61,7 @@ public class PracticeController {
         Integer userId = (Integer) session.getAttribute("userId");
         
         // Get user's vocabulary or random vocabs for practice
-        List<Vocabulary> vocabs = userVocabService.getUserVocabulariesWithDetails(userId);
-        
-        if (vocabs.isEmpty()) {
-            // If user has no vocabulary, use random ones
-            vocabs = vocabularyService.getRandomVocabularies(10);
-        }
+        List<UserVocabularyDTO> vocabs = userVocabService.getRandomUserVocabularies(userId, 10);
         
         model.addAttribute("vocabularies", vocabs);
         model.addAttribute("currentIndex", 0);
@@ -85,10 +86,26 @@ public class PracticeController {
     public String typing(Model model, HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
         
-        List<Vocabulary> vocabs = userVocabService.getUserVocabulariesWithDetails(userId);
+        List<UserVocabularyDTO> vocabs = userVocabService.getUserVocabulariesWithDetails(userId);
         
         if (vocabs.isEmpty()) {
-            vocabs = vocabularyService.getRandomVocabularies(10);
+            // If user has no vocabulary, use random ones
+            List<Vocabulary> randomVocabs = vocabularyService.getRandomVocabularies(10);
+            vocabs = new ArrayList<>();
+            for (Vocabulary vocab : randomVocabs) {
+                UserVocabularyDTO dto = new UserVocabularyDTO();
+                dto.setVocabId(vocab.getId());
+                dto.setUserVocabId(null); // Không có userVocabId vì chưa lưu
+                dto.setWord(vocab.getWord());
+                dto.setMeaning(vocab.getMeaning());
+                dto.setRomaji(vocab.getRomaji());
+                dto.setHiragana(vocab.getHiragana());
+                dto.setKatakana(vocab.getKatakana());
+                dto.setKanji(vocab.getKanji());
+                dto.setAudioUrl(vocab.getAudioUrl());
+                dto.setStatus("active");
+                vocabs.add(dto);
+            }
         }
         
         model.addAttribute("vocabularies", vocabs);
@@ -100,26 +117,59 @@ public class PracticeController {
     @PostMapping("/save-result")
     public String saveResult(@RequestParam("resultsJson") String resultsJson, 
                              @RequestParam("totalScore") Integer totalScore, 
-                             Model model) {
+                             Model model, HttpSession session) {
         try {
+            Integer userId = (Integer) session.getAttribute("userId");
             ObjectMapper mapper = new ObjectMapper();
             List<Map<String, Object>> results = mapper.readValue(resultsJson, 
                     new TypeReference<List<Map<String, Object>>>(){});
             
+            // Lấy toàn bộ user vocabularies một lần
+            List<UserVocabularyDTO> allUserVocabs = userVocabService.getUserVocabulariesWithDetails(userId);
+            Map<Integer, UserVocabularyDTO> vocabMap = new java.util.HashMap<>();
+            for (UserVocabularyDTO vocab : allUserVocabs) {
+                vocabMap.put(vocab.getUserVocabId(), vocab);
+            }
+            
             List<PracticeHistory> historyToSave = new ArrayList<>();
+            List<Map<String, Object>> detailedResults = new ArrayList<>();
             Date now = new Date(); // Thời điểm luyện tập
+            
+            int correctCount = 0;
 
             for (Map<String, Object> item : results) {
                 PracticeHistory history = new PracticeHistory();
                 
                 // Trích xuất dữ liệu từ Map và ép kiểu về đúng loại
-                history.setUserVocabId((Integer) item.get("userVocabId"));
-                history.setCorrectCount((Integer) item.get("correctCount"));
-                history.setWrongCount((Integer) item.get("wrongCount"));
-                history.setMode((String) item.get("mode"));
+                Integer userVocabId = (Integer) item.get("userVocabId");
+                Integer correct = (Integer) item.get("correctCount");
+                Integer wrong = (Integer) item.get("wrongCount");
+                String mode = (String) item.get("mode");
+                
+                history.setUserVocabId(userVocabId);
+                history.setCorrectCount(correct);
+                history.setWrongCount(wrong);
+                history.setMode(mode);
                 history.setPracticeDate(now);
 
                 historyToSave.add(history);
+                
+                // Đếm số câu đúng
+                if (correct > 0) {
+                    correctCount++;
+                }
+                
+                // Lấy thông tin từ vựng để hiển thị
+                UserVocabularyDTO vocab = vocabMap.get(userVocabId);
+                if (vocab != null) {
+                    Map<String, Object> detailedItem = new java.util.HashMap<>();
+                    detailedItem.put("word", vocab.getWord());
+                    detailedItem.put("meaning", vocab.getMeaning());
+                    detailedItem.put("romaji", vocab.getRomaji());
+                    detailedItem.put("correctCount", correct);
+                    detailedItem.put("wrongCount", wrong);
+                    detailedResults.add(detailedItem);
+                }
             }
             
             int totalItems = results.size();
@@ -127,10 +177,13 @@ public class PracticeController {
             // Thực hiện lưu vào Database
             userVocabService.saveHistoryPractice(historyToSave);
             
-            model.addAttribute("score", totalScore);
+            // Tính tỷ lệ chính xác dựa trên số câu đúng
+            int percent = totalItems > 0 ? (correctCount * 100 / totalItems) : 0;
+            
+            model.addAttribute("score", correctCount);
             model.addAttribute("total", totalItems);
-            model.addAttribute("percent", (int)(totalScore*100/totalItems));
-            model.addAttribute("results", results); 
+            model.addAttribute("percent", percent);
+            model.addAttribute("results", detailedResults); 
 
             return "practice/result";
         } catch (Exception e) {
