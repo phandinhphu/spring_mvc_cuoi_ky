@@ -113,6 +113,18 @@ public class PracticeController {
         model.addAttribute("score", 0);
         return "practice/typing";
     }
+
+    @GetMapping("/quiz")
+    public String quiz(Model model, HttpSession session) {
+        Integer userId = (Integer) session.getAttribute("userId");
+        
+        List<Map<String, Object>> vocabularies = userVocabService.getUserActiveVocabulariesWithDetails(userId);
+        List<Vocabulary> distractors = vocabularyService.getRandomVocabularies(100);
+        
+        model.addAttribute("vocabularies", vocabularies);
+        model.addAttribute("distractors", distractors);
+        return "practice/quiz";
+    }
     
     @PostMapping("/save-result")
     public String saveResult(@RequestParam("resultsJson") String resultsJson, 

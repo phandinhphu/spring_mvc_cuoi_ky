@@ -39,6 +39,9 @@
                         <li><a class="dropdown-item" href="${pageContext.request.contextPath}/practice/typing">
                             <i class="fas fa-keyboard me-2"></i>Điền từ
                         </a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/practice/quiz">
+                            <i class="fas fa-question-circle me-2"></i>Trắc nghiệm
+                        </a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
