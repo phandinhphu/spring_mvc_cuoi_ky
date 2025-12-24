@@ -171,6 +171,19 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-question-circle text-info me-2"></i>Trắc nghiệm
+                                </h5>
+                                <p class="card-text">Xem từ vựng và chọn nghĩa đúng. Kiểm tra kiến thức từ vựng của bạn.</p>
+                                <a href="${pageContext.request.contextPath}/practice/quiz" class="btn btn-info btn-custom">
+                                    Bắt đầu <i class="fas fa-arrow-right ms-2"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

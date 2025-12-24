@@ -128,6 +128,27 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-lg-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <div class="stat-icon bg-info bg-opacity-10 text-info mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px;">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                            <h4 class="mb-3">Trắc nghiệm</h4>
+                            <p class="text-muted mb-4">Xem từ vựng và chọn nghĩa đúng. Kiểm tra kiến thức từ vựng</p>
+                            
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <small>Hiển thị từ vựng và 4 phương án</small>
+                            </div>
+                            
+                            <a href="${pageContext.request.contextPath}/practice/quiz" class="btn btn-info btn-lg w-100 btn-custom">
+                                <i class="fas fa-play me-2"></i>Bắt đầu
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Tips -->
