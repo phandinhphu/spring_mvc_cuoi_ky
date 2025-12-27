@@ -3,7 +3,6 @@ package com.cuoi_ky.service;
 import com.cuoi_ky.dto.UserVocabularyDTO;
 import com.cuoi_ky.model.PracticeHistory;
 import com.cuoi_ky.model.UserVocab;
-import com.cuoi_ky.model.Vocabulary;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -69,4 +68,13 @@ public interface UserVocabService {
      * Get random user vocabularies (10)
      */
     List<UserVocabularyDTO> getRandomUserVocabularies(Integer userId, int limit);
+    
+    /**
+     * Các hàm dành riêng cho Epic 3: Sổ tay lưu từ
+     */
+    long getReviewCount(Integer userId); // Đếm từ 'active' (Ôn tập)
+    long getSleepCount(Integer userId);  // Đếm từ 'sleep' (Ngủ đông)
+    List<UserVocabularyDTO> getNotebookVocabulariesByStatus(Integer userId, String status); // Lấy danh sách theo status
+    void updateVocabularyStatusById(Integer userVocabId, String status);
+    List<UserVocabularyDTO> searchMyList(Integer userId, String keyword);
 }
