@@ -38,4 +38,5 @@ public interface UserVocabRepository extends BaseRepository<UserVocab, Integer> 
      * Find random vocabularies for a user
      */
     List<UserVocab> findRandomByUserId(Integer userId, int limit);
+    List<UserVocab> searchByRomaji(Integer userId, String keyword);
 }

@@ -96,16 +96,70 @@ public class VocabularyController {
     }
 
     @GetMapping("/my-list")
-    public String myList(Model model, HttpSession session) {
-        // Get user ID from session - interceptor ensures user is logged in
+    public String myList(@RequestParam(value = "status", required = false) String status,
+                         @RequestParam(value = "keyword", required = false) String keyword,
+                         Model model, HttpSession session) {
         Integer userId = (Integer) session.getAttribute("userId");
-        
-        // Get user's vocabulary list with full details
-        List<UserVocabularyDTO> myVocabs = userVocabService.getUserVocabulariesWithDetails(userId);
-        
-        model.addAttribute("vocabularies", myVocabs);
-        model.addAttribute("totalWords", myVocabs.size());
+        if (userId == null) return "redirect:/login";
+
+        // Trường hợp ƯU TIÊN: Có từ khóa tìm kiếm
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            List<UserVocabularyDTO> searchResults = userVocabService.searchMyList(userId, keyword.trim());
+            model.addAttribute("vocabularies", searchResults);
+            model.addAttribute("viewMode", "LIST");
+            model.addAttribute("totalWords", searchResults.size());
+            return "vocabulary/my-list";
+        }
+
+        // Trường hợp 2: Click vào thẻ Ôn tập / Ngủ đông
+        if (status != null && !status.trim().isEmpty()) {
+            List<UserVocabularyDTO> vocabList = userVocabService.getNotebookVocabulariesByStatus(userId, status);
+            model.addAttribute("vocabularies", vocabList);
+            model.addAttribute("currentStatus", status);
+            model.addAttribute("viewMode", "LIST");
+            model.addAttribute("totalWords", vocabList.size());
+        } 
+        // Trường hợp 3: Dashboard mặc định
+        else {
+            model.addAttribute("reviewCount", userVocabService.getReviewCount(userId));
+            model.addAttribute("sleepCount", userVocabService.getSleepCount(userId));
+            model.addAttribute("viewMode", "DASHBOARD");
+        }
+
         return "vocabulary/my-list";
+    }
+    @PostMapping("/update-notebook-status")
+    public String updateNotebookStatus(
+            @RequestParam("currentStatus") String currentStatus,
+            @RequestParam(value = "allIds", required = false) List<Integer> allIds,
+            @RequestParam(value = "tickedIds", required = false) List<Integer> tickedIds,
+            HttpSession session) {
+        
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null || allIds == null) return "redirect:/login";
+
+        if (tickedIds == null) tickedIds = new java.util.ArrayList<>();
+
+        // US-3.5: Đang ở Ôn tập (active)
+        if ("active".equals(currentStatus)) {
+            for (Integer id : tickedIds) {
+                // Lấy vocabId từ userVocabId hoặc update trực tiếp theo id của bảng user_vocab
+                // Ở đây tôi giả định bạn có hàm update theo userVocabId hoặc dùng loop
+                userVocabService.updateVocabularyStatusById(id, "sleep");
+            }
+        } 
+        // US-3.6: Đang ở Ngủ đông (sleep)
+        else if ("sleep".equals(currentStatus)) {
+            for (Integer id : allIds) {
+                // Nếu id nằm trong danh sách hiển thị nhưng KHÔNG nằm trong danh sách được tick
+                // Nghĩa là người dùng đã bỏ chọn -> chuyển về active
+                if (!tickedIds.contains(id)) {
+                    userVocabService.updateVocabularyStatusById(id, "active");
+                }
+            }
+        }
+
+        return "redirect:/vocabulary/my-list?status=" + currentStatus;
     }
 
     @PostMapping("/toggle-list/{id}")
