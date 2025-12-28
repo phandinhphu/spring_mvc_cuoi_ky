@@ -129,7 +129,17 @@ public class UserVocabServiceImpl extends BaseRepositoryImpl<UserVocab, Integer>
 
 	@Override
 	public long getMasteredCount(Integer userId) {
-		return userVocabRepository.countByUserIdAndStatus(userId, "mastered");
+		// Lấy tất cả từ vựng mà người dùng đã thêm vào
+		List<UserVocab> userVocabs = userVocabRepository.findByUserId(userId);
+		long masteredCount = 0;
+		for (UserVocab uv : userVocabs) {
+			// Kiểm tra trong bảng practice_history xem từ vựng này đã được học thuộc chưa
+			boolean isMastered = practiceHistoryRepository.existsByUserVocabId(uv.getId());
+			if (isMastered) {
+				masteredCount++;
+			}
+		}
+		return masteredCount;
 	}
 
 	@Override

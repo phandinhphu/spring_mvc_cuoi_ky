@@ -3,6 +3,7 @@ package com.cuoi_ky.service.impl;
 import com.cuoi_ky.model.DailyStreak;
 import com.cuoi_ky.model.UserVocab;
 import com.cuoi_ky.repository.DailyStreakRepository;
+import com.cuoi_ky.repository.PracticeHistoryRepository;
 import com.cuoi_ky.repository.UserVocabRepository;
 import com.cuoi_ky.service.StatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +23,15 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private final DailyStreakRepository dailyStreakRepository;
     private final UserVocabRepository userVocabRepository;
+    private final PracticeHistoryRepository practiceHistoryRepository;
 
     @Autowired
     public StatisticsServiceImpl(DailyStreakRepository dailyStreakRepository,
-                                 UserVocabRepository userVocabRepository) {
+                                 UserVocabRepository userVocabRepository,
+                                 PracticeHistoryRepository practiceHistoryRepository) {
         this.dailyStreakRepository = dailyStreakRepository;
         this.userVocabRepository = userVocabRepository;
+        this.practiceHistoryRepository = practiceHistoryRepository;
     }
 
     @Override
@@ -38,6 +42,27 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public List<DailyStreak> getRecentStreaks(Integer userId, int days) {
         return dailyStreakRepository.findRecentByUserId(userId, days);
+    }
+
+    // Phương thức tính toán độ chính xác tổng thể
+    @Override
+    public Double getTotalAccuracy(Integer userId) {
+        List<UserVocab> userVocabs = userVocabRepository.findByUserId(userId);
+        int totalCorrect = 0;
+        int totalAttempts = 0;
+
+        for (UserVocab uv : userVocabs) {
+            int correctCount = practiceHistoryRepository.getCorrectCountByUserVocabId(uv.getId());
+            int wrongCount = practiceHistoryRepository.getWrongCountByUserVocabId(uv.getId());
+            totalCorrect += correctCount;
+            totalAttempts += (correctCount + wrongCount);
+        }
+
+        if (totalAttempts == 0) {
+            return 0.0;
+        }
+
+        return (double) totalCorrect / totalAttempts * 100;
     }
 
     @Override

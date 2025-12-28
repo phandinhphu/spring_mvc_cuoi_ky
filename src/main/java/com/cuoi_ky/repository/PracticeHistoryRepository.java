@@ -10,6 +10,21 @@ import java.util.List;
 public interface PracticeHistoryRepository extends BaseRepository<PracticeHistory, Integer> {
     
     /**
+     * Check user vocab practice history exists
+     */
+    boolean existsByUserVocabId(Integer userVocabId);
+
+    /**
+     * Get total correct count for a user vocab
+     */
+    int getCorrectCountByUserVocabId(Integer userVocabId);
+
+    /**
+     * Get total wrong count for a user vocab
+     */
+    int getWrongCountByUserVocabId(Integer userVocabId);
+
+    /**
      * Find practice history by user vocab ID
      */
     PracticeHistory findByUserVocabId(Integer userVocabId);

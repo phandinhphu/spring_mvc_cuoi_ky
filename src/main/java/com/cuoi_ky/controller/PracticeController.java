@@ -4,6 +4,7 @@ import com.cuoi_ky.dto.UserVocabularyDTO;
 import com.cuoi_ky.model.PracticeHistory;
 import com.cuoi_ky.model.Vocabulary;
 import com.cuoi_ky.service.VocabularyService;
+import com.cuoi_ky.service.DailyStreakService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -36,12 +37,15 @@ public class PracticeController {
 
     private final VocabularyService vocabularyService;
     private final UserVocabService userVocabService;
+    private final DailyStreakService dailyStreakService;
 
     @Autowired
     public PracticeController(VocabularyService vocabularyService,
-                             UserVocabService userVocabService) {
+                             UserVocabService userVocabService,
+                             DailyStreakService dailyStreakService) {
         this.vocabularyService = vocabularyService;
         this.userVocabService = userVocabService;
+        this.dailyStreakService = dailyStreakService;
     }
 
     @GetMapping("/")
@@ -188,6 +192,12 @@ public class PracticeController {
 
             // Thực hiện lưu vào Database
             userVocabService.saveHistoryPractice(historyToSave);
+            
+            // Cập nhật daily streak (chỉ 1 lần trong ngày)
+            boolean isNewStreak = dailyStreakService.recordPracticeToday(userId, totalItems);
+            if (isNewStreak) {
+                log.info("Daily streak recorded for user: {}", userId);
+            }
             
             // Tính tỷ lệ chính xác dựa trên số câu đúng
             int percent = totalItems > 0 ? (correctCount * 100 / totalItems) : 0;

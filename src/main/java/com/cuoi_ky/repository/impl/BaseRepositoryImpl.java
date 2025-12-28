@@ -46,6 +46,12 @@ public abstract class BaseRepositoryImpl<T, ID extends Serializable> implements 
     }
 
     @Override
+    public T update(T entity) {
+        getSession().update(entity);
+        return entity;
+    }
+
+    @Override
     public Optional<T> findById(ID id) {
         T entity = getSession().get(entityClass, id);
         return Optional.ofNullable(entity);
