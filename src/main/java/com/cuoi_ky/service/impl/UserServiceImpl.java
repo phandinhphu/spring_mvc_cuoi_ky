@@ -1,31 +1,33 @@
 package com.cuoi_ky.service.impl;
 
+import com.cuoi_ky.dto.GoogleUser;
 import com.cuoi_ky.model.User;
 import com.cuoi_ky.repository.UserRepository;
+import com.cuoi_ky.service.CloudinaryService;
 import com.cuoi_ky.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
-/**
- * User Service Implementation
- * Following Single Responsibility Principle
- */
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CloudinaryService cloudinaryService;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, CloudinaryService cloudinaryService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
@@ -38,6 +40,28 @@ public class UserServiceImpl implements UserService {
         
         return userRepository.save(user);
     }
+    
+    @Override
+    public User registerUserWithGoogle(GoogleUser googleUser) {
+    	User user = userRepository.findByEmail(googleUser.getEmail()).orElse(null);
+    	if (user == null) {
+			user = new User();
+			user.setUsername(googleUser.getEmail());
+			user.setEmail(googleUser.getEmail());
+			user.setFullname(googleUser.getName());
+			user.setAvatar(googleUser.getPicture());
+			user.setGoogleId(googleUser.getId());
+			user.setCreatedAt(new Date());
+			
+			user = userRepository.save(user);
+		} else if (user.getGoogleId() == null) {
+    		user.setAvatar(googleUser.getPicture());
+    		user.setGoogleId(googleUser.getId());
+    		userRepository.save(user);
+    	}
+    	
+    	return user;
+	}
 
     @Override
     public Optional<User> authenticate(String username, String password) {
@@ -85,6 +109,13 @@ public class UserServiceImpl implements UserService {
 		if(userOpt.isPresent()) {
 			User user = userOpt.get();
 			
+			// Nếu oldPassword = "" và user có password null và googleId khác null thì cho đổi
+			if(oldPassword.isEmpty() && user.getPassword() == null && user.getGoogleId() != null) {
+				userRepository.changePassword(id, passwordEncoder.encode(newPassword));
+				return true;
+			}
+			
+			// Nếu oldPassword đúng thì mới cho đổi
 			if(passwordEncoder.matches(oldPassword, user.getPassword())) {
 				userRepository.changePassword(id, passwordEncoder.encode(newPassword));
 				return true;
@@ -94,7 +125,20 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean updateAvatar(Integer id, String avatar) {
-		return userRepository.updateAvatar(id, avatar);
+	public String updateAvatar(Integer id, MultipartFile file) throws Exception {
+		User user = userRepository.findById(id).orElseThrow(() -> new Exception("User not found"));
+		
+		if (user.getAvatarPublicId() != null) {
+			cloudinaryService.deleteImage(user.getAvatarPublicId());
+		}
+		
+		Map uploadResult = cloudinaryService.uploadImage(file.getBytes());
+
+        user.setAvatar(uploadResult.get("secure_url").toString());
+        user.setAvatarPublicId(uploadResult.get("public_id").toString());
+
+        userRepository.save(user);
+        
+        return user.getAvatar();
 	}
 }

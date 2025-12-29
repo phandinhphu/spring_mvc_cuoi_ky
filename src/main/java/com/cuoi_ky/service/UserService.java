@@ -1,7 +1,10 @@
 package com.cuoi_ky.service;
 
+import com.cuoi_ky.dto.GoogleUser;
 import com.cuoi_ky.model.User;
 import java.util.Optional;
+
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * User Service Interface
@@ -12,6 +15,11 @@ public interface UserService {
      * Register new user
      */
     User registerUser(User user);
+    
+    /**
+     * Register new user with Google
+     */
+    User registerUserWithGoogle(GoogleUser googleUser);
     
     /**
      * Authenticate user
@@ -51,5 +59,5 @@ public interface UserService {
     /**
      * Update avatar
      */
-    boolean updateAvatar(Integer id, String avatar);
+    String updateAvatar(Integer id, MultipartFile file) throws Exception;
 }

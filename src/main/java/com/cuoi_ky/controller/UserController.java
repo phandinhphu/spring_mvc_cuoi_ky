@@ -1,8 +1,5 @@
 package com.cuoi_ky.controller;
 
-import java.io.File;
-import java.io.IOException;
-
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,30 +61,26 @@ public class UserController {
 	        ra.addFlashAttribute("error", "Vui lòng chọn một hình ảnh.");
 	        return "redirect:/profile/";
 	    }
+	    
+	    if (!file.getContentType().startsWith("image/")) {
+	    	ra.addFlashAttribute("error", "Vui lòng tải lên một tệp hình ảnh hợp lệ.");
+	        return "redirect:/profile/";
+	    }
+
+	    if (file.getSize() > 2 * 1024 * 1024) {
+	    	ra.addFlashAttribute("error", "Kích thước tệp vượt quá giới hạn 2MB.");
+	        return "redirect:/profile/";
+	    }
 
 	    try {
 	        User currentUser = (User) session.getAttribute("user");
-	        String uploadDir = session.getServletContext().getRealPath("/resources/images/");
 	        
-	        // Tạo tên file duy nhất để tránh trùng lặp
-	        String fileName = "avatar_" + currentUser.getId() + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
-	        
-	        // Tạo file vật lý trên server
-	        File serverFile = new File(uploadDir + File.separator + fileName);
-	        file.transferTo(serverFile); // Lưu file
+	        String avatarUrl = userService.updateAvatar(currentUser.getId(), file);
 
-	        // Cập nhật vào Database
-	        boolean success = userService.updateAvatar(currentUser.getId(), fileName);
-
-	        if (success) {
-	            currentUser.setAvatar(fileName);
-	            session.setAttribute("user", currentUser);
-	            ra.addFlashAttribute("message", "Cập nhật ảnh đại diện thành công!");
-	        } else {
-	            ra.addFlashAttribute("error", "Lỗi cập nhật cơ sở dữ liệu.");
-	        }
-
-	    } catch (IOException e) {
+            currentUser.setAvatar(avatarUrl);
+            session.setAttribute("user", currentUser);
+            ra.addFlashAttribute("message", "Cập nhật ảnh đại diện thành công!");
+	    } catch (Exception e) {
 	        e.printStackTrace();
 	        ra.addFlashAttribute("error", "Lỗi khi lưu file: " + e.getMessage());
 	    }
@@ -96,7 +89,7 @@ public class UserController {
 	}
 	
 	@PostMapping("/change-password")
-    public String changePassword(@RequestParam("oldPassword") String oldPassword,
+    public String changePassword(@RequestParam(value = "oldPassword", defaultValue = "") String oldPassword,
                                  @RequestParam("newPassword") String newPassword,
                                  HttpSession session,
                                  RedirectAttributes ra) {
