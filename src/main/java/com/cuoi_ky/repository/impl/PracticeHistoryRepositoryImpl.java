@@ -69,4 +69,17 @@ public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHi
         query.setParameter("userVocabId", userVocabId);
         query.executeUpdate();
     }
+    
+    @Override
+    public Object[] getTotalCorrectAndWrong(Integer userId) {
+        String hql = "SELECT SUM(ph.correctCount), SUM(ph.wrongCount) " +
+                     "FROM PracticeHistory ph " +
+                     "JOIN UserVocab uv ON ph.userVocabId = uv.id " +
+                     "WHERE uv.userId = :userId";
+        
+        Query<Object[]> query = getSession().createQuery(hql, Object[].class);
+        query.setParameter("userId", userId);
+        
+        return query.getSingleResult(); 
+    }
 }

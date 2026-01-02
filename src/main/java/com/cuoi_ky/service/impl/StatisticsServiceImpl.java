@@ -3,6 +3,7 @@ package com.cuoi_ky.service.impl;
 import com.cuoi_ky.model.DailyStreak;
 import com.cuoi_ky.model.UserVocab;
 import com.cuoi_ky.repository.DailyStreakRepository;
+import com.cuoi_ky.repository.PracticeHistoryRepository;
 import com.cuoi_ky.repository.UserVocabRepository;
 import com.cuoi_ky.service.StatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,12 +23,15 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     private final DailyStreakRepository dailyStreakRepository;
     private final UserVocabRepository userVocabRepository;
+    private final PracticeHistoryRepository practiceHistoryRepository;
 
     @Autowired
     public StatisticsServiceImpl(DailyStreakRepository dailyStreakRepository,
-                                 UserVocabRepository userVocabRepository) {
+                                 UserVocabRepository userVocabRepository,
+                                 PracticeHistoryRepository practiceHistoryRepository) {
         this.dailyStreakRepository = dailyStreakRepository;
         this.userVocabRepository = userVocabRepository;
+        this.practiceHistoryRepository = practiceHistoryRepository;
     }
 
     @Override
@@ -102,5 +106,21 @@ public class StatisticsServiceImpl implements StatisticsService {
         distribution.put("review", reviewCount);
         
         return distribution;
+    }
+    
+    @Override
+    public double getOverallAccuracy(Integer userId) {
+        Object[] results = practiceHistoryRepository.getTotalCorrectAndWrong(userId);
+        
+        // results[0] là tổng đúng, results[1] là tổng sai
+        long correct = (results[0] != null) ? (long) results[0] : 0;
+        long wrong = (results[1] != null) ? (long) results[1] : 0;
+        long total = correct + wrong;
+
+        if (total == 0) {
+            return 0.0;
+        }
+
+        return (double) correct / total * 100;
     }
 }

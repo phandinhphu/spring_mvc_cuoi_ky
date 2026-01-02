@@ -34,7 +34,7 @@
                         <div class="stat-icon bg-primary bg-opacity-10 text-primary">
                             <i class="fas fa-fire"></i>
                         </div>
-                        <div class="stat-value text-primary">${currentStreak}</div>
+                        <div class="stat-value text-primary">${streak}</div>
                         <div class="stat-label">Streak hiện tại</div>
                         <div class="mt-2 small text-muted">
                             <i class="fas fa-trophy me-1"></i>Cao nhất: ${longestStreak} ngày

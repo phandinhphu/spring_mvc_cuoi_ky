@@ -38,4 +38,10 @@ public interface PracticeHistoryRepository extends BaseRepository<PracticeHistor
      * Update practice history record wrong_count
      */
     void updateWrongCount(Integer userVocabId, int wrongCount);
+
+    /**
+     * 
+     * Get sum correct and wrong word
+     */
+	Object[] getTotalCorrectAndWrong(Integer userId);
 }

@@ -37,17 +37,13 @@ public class StatisticsController {
         Integer userId = (Integer) session.getAttribute("userId");
         
         // Get real statistics from database
-        int currentStreak = statisticsService.getCurrentStreak(userId);
+        int streak = statisticsService.getCurrentStreak(userId);
+        double accuracy = statisticsService.getOverallAccuracy(userId);
         long totalWords = userVocabService.getTotalVocabularyCount(userId);
-        long masteredWords = userVocabService.getMasteredCount(userId);
-        double accuracy = totalWords > 0 ? (masteredWords * 100.0) / totalWords : 0;
         
-        model.addAttribute("currentStreak", currentStreak);
-        model.addAttribute("longestStreak", currentStreak); // Will track longest separately later
-        model.addAttribute("totalWords", totalWords);
-        model.addAttribute("learnedWords", masteredWords);
+        model.addAttribute("streak", streak);
         model.addAttribute("accuracy", String.format("%.1f", accuracy));
-        model.addAttribute("totalPracticeTime", 0); // Will track this later
+        model.addAttribute("totalWords", totalWords);
         
         // Get weekly progress from database
         Map<String, Integer> weeklyData = statisticsService.getWeeklyProgress(userId);
@@ -59,14 +55,6 @@ public class StatisticsController {
             weeklyProgress.add(day);
         }
         model.addAttribute("weeklyProgress", weeklyProgress);
-        
-        // Get vocabulary distribution
-        Map<String, Long> distribution = statisticsService.getVocabularyDistribution(userId);
-        Map<String, Integer> practiceDistribution = new HashMap<>();
-        practiceDistribution.put("Mastered", distribution.get("mastered").intValue());
-        practiceDistribution.put("Learning", distribution.get("learning").intValue());
-        practiceDistribution.put("Review", distribution.get("review").intValue());
-        model.addAttribute("practiceDistribution", practiceDistribution);
         
         return "statistics/index";
     }

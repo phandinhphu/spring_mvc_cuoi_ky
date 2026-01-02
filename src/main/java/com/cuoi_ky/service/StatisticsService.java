@@ -39,4 +39,10 @@ public interface StatisticsService {
      * Get vocabulary distribution by status
      */
     Map<String, Long> getVocabularyDistribution(Integer userId);
+
+    /**
+     * 
+     * Caculate percent
+     */
+	double getOverallAccuracy(Integer userId);
 }
