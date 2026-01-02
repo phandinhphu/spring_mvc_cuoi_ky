@@ -44,6 +44,27 @@ public class StatisticsServiceImpl implements StatisticsService {
         return dailyStreakRepository.findRecentByUserId(userId, days);
     }
 
+    // Phương thức tính toán độ chính xác tổng thể
+    @Override
+    public Double getTotalAccuracy(Integer userId) {
+        List<UserVocab> userVocabs = userVocabRepository.findByUserId(userId);
+        int totalCorrect = 0;
+        int totalAttempts = 0;
+
+        for (UserVocab uv : userVocabs) {
+            int correctCount = practiceHistoryRepository.getCorrectCountByUserVocabId(uv.getId());
+            int wrongCount = practiceHistoryRepository.getWrongCountByUserVocabId(uv.getId());
+            totalCorrect += correctCount;
+            totalAttempts += (correctCount + wrongCount);
+        }
+
+        if (totalAttempts == 0) {
+            return 0.0;
+        }
+
+        return (double) totalCorrect / totalAttempts * 100;
+    }
+
     @Override
     public DailyStreak recordDailyLearning(Integer userId, int learnedWords) {
         Date today = new Date();

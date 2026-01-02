@@ -48,8 +48,8 @@ public class HomeController {
         long masteredWords = userVocabService.getMasteredCount(userId);
         int currentStreak = statisticsService.getCurrentStreak(userId);
         
-        // Calculate accuracy
-        double accuracy = totalWords > 0 ? (masteredWords * 100.0) / totalWords : 0;
+        // Total accuracy of all practiced vocabularies
+        Double accuracy = statisticsService.getTotalAccuracy(userId);
         
         model.addAttribute("username", username); // Will get from User entity later
         model.addAttribute("streak", currentStreak);

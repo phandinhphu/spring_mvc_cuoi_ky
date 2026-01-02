@@ -18,6 +18,11 @@ public interface BaseRepository<T, ID extends Serializable> {
     T save(T entity);
     
     /**
+     * Update existing entity
+     */
+    T update(T entity);
+    
+    /**
      * Find entity by ID
      */
     Optional<T> findById(ID id);

@@ -18,6 +18,33 @@ public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHi
         implements PracticeHistoryRepository {
 
     @Override
+    public boolean existsByUserVocabId(Integer userVocabId) {
+        String hql = "SELECT COUNT(ph.id) FROM PracticeHistory ph WHERE ph.userVocabId = :userVocabId";
+        Query<Long> query = getSession().createQuery(hql, Long.class);
+        query.setParameter("userVocabId", userVocabId);
+        Long count = query.uniqueResult();
+        return count != null && count > 0;
+    }
+
+    @Override
+    public int getCorrectCountByUserVocabId(Integer userVocabId) {
+        String hql = "SELECT ph.correctCount FROM PracticeHistory ph WHERE ph.userVocabId = :userVocabId";
+        Query<Integer> query = getSession().createQuery(hql, Integer.class);
+        query.setParameter("userVocabId", userVocabId);
+        Integer totalCorrect = query.uniqueResult();
+        return totalCorrect != null ? totalCorrect.intValue() : 0;
+    }
+
+    @Override
+    public int getWrongCountByUserVocabId(Integer userVocabId) {
+        String hql = "SELECT ph.wrongCount FROM PracticeHistory ph WHERE ph.userVocabId = :userVocabId";
+        Query<Integer> query = getSession().createQuery(hql, Integer.class);
+        query.setParameter("userVocabId", userVocabId);
+        Integer totalWrong = query.uniqueResult();
+        return totalWrong != null ? totalWrong.intValue() : 0;
+    }
+
+    @Override
     public PracticeHistory findByUserVocabId(Integer userVocabId) {
         String hql = "FROM PracticeHistory ph WHERE ph.userVocabId = :userVocabId ORDER BY ph.practiceDate DESC";
         Query<PracticeHistory> query = getSession().createQuery(hql, PracticeHistory.class);
@@ -54,7 +81,10 @@ public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHi
 
     @Override
     public void updateCorrectCount(Integer userVocabId, int correctCount) {
-        String hql = "UPDATE PracticeHistory ph SET ph.correctCount = :correctCount WHERE ph.userVocabId = :userVocabId";
+        String hql = "UPDATE PracticeHistory ph SET " +
+        "ph.correctCount = :correctCount, " +
+        "ph.practiceDate = CURRENT_TIMESTAMP " +
+        "WHERE ph.userVocabId = :userVocabId";
         Query<?> query = getSession().createQuery(hql);
         query.setParameter("correctCount", correctCount);
         query.setParameter("userVocabId", userVocabId);
@@ -63,7 +93,10 @@ public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHi
 
     @Override
     public void updateWrongCount(Integer userVocabId, int wrongCount) {
-        String hql = "UPDATE PracticeHistory ph SET ph.wrongCount = :wrongCount WHERE ph.userVocabId = :userVocabId";
+        String hql = "UPDATE PracticeHistory ph SET " +
+        "ph.wrongCount = :wrongCount, " +
+        "ph.practiceDate = CURRENT_TIMESTAMP " +
+        "WHERE ph.userVocabId = :userVocabId";
         Query<?> query = getSession().createQuery(hql);
         query.setParameter("wrongCount", wrongCount);
         query.setParameter("userVocabId", userVocabId);

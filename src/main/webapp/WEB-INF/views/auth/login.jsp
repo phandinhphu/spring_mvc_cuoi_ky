@@ -81,11 +81,9 @@
                             <div class="text-center">
                                 <p class="text-muted mb-3">Hoặc đăng nhập với</p>
                                 <div class="d-flex gap-2 justify-content-center">
-                                    <button type="button" class="btn btn-outline-primary flex-fill">
+                                    <button type="button" class="btn btn-outline-primary flex-fill"
+                                           onclick="window.location.href='${pageContext.request.contextPath}/auth/oauth2/authorize/google'">
                                         <i class="fab fa-google me-2"></i>Google
-                                    </button>
-                                    <button type="button" class="btn btn-outline-primary flex-fill">
-                                        <i class="fab fa-facebook-f me-2"></i>Facebook
                                     </button>
                                 </div>
                             </div>

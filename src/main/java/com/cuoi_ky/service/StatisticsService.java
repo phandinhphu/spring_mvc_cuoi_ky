@@ -19,6 +19,11 @@ public interface StatisticsService {
      * Get recent daily streaks
      */
     List<DailyStreak> getRecentStreaks(Integer userId, int days);
+
+    /**
+     * Get total accuracy statistics (of all practiced vocabularies)
+     */
+    Double getTotalAccuracy(Integer userId);
     
     /**
      * Record daily learning

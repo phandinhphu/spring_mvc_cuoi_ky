@@ -39,6 +39,9 @@
                         <li><a class="dropdown-item" href="${pageContext.request.contextPath}/practice/typing">
                             <i class="fas fa-keyboard me-2"></i>Điền từ
                         </a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/practice/quiz">
+                            <i class="fas fa-question-circle me-2"></i>Trắc nghiệm
+                        </a></li>
                     </ul>
                 </li>
                 <li class="nav-item">
@@ -58,7 +61,7 @@
                         <i class="fas fa-user-circle me-1"></i>${username != null ? username : 'Người dùng'}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile/"><i class="fas fa-cog me-2"></i>Cài đặt</a></li>
+                        <li><a class="dropdown-item" href="${pageContext.request.contextPath}/profile/"><i class="fas fa-cog me-2"></i>Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="${pageContext.request.contextPath}/auth/logout">
                             <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất

@@ -102,7 +102,7 @@
                                     </a>
                                 </div>
                                 <div class="col-md-3">
-                                    <a href="${pageContext.request.contextPath}/quiz/start" class="btn btn-success w-100 btn-custom">
+                                    <a href="${pageContext.request.contextPath}/practice/quiz" class="btn btn-success w-100 btn-custom">
                                         <i class="fas fa-question-circle me-2"></i>Làm Quiz
                                     </a>
                                 </div>

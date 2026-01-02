@@ -20,11 +20,21 @@
                 <div class="col-md-4">
                     <div class="card shadow-sm text-center p-4">
                         <div class="mb-3">
-                            <img src="${pageContext.request.contextPath}/resources/images/${not empty user.avatar ? user.avatar : 'default-avatar.png'}" 
-                                 class="rounded-circle img-thumbnail" 
-                                 style="width: 150px; height: 150px; object-fit: cover;" 
-                                 alt="Avatar">
-                        </div>
+							<c:choose>
+								<c:when test="${not empty user.avatar}">
+									<img src="${user.avatar}" class="rounded-circle img-thumbnail"
+										style="width: 150px; height: 150px; object-fit: cover;"
+										alt="Avatar" />
+								</c:when>
+								<c:otherwise>
+									<img
+										src="${pageContext.request.contextPath}/resources/images/default-avatar.png"
+										class="rounded-circle img-thumbnail"
+										style="width: 150px; height: 150px; object-fit: cover;"
+										alt="Avatar" />
+								</c:otherwise>
+							</c:choose>
+						</div>
                         <h4 class="mb-1">${not empty user.fullname ? user.fullname : user.username}</h4>
                         <p class="text-muted">@${user.username}</p>
                         <p class="text-muted">
@@ -78,7 +88,7 @@
                                 <form action="${pageContext.request.contextPath}/profile/change-password" method="post" id="changePasswordForm">
                                     <div class="mb-3">
                                         <label class="form-label">Mật khẩu hiện tại</label>
-                                        <input type="password" name="oldPassword" class="form-control" required>
+                                        <input type="password" name="oldPassword" class="form-control">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Mật khẩu mới</label>

@@ -68,4 +68,16 @@ public class UserVocabRepositoryImpl extends BaseRepositoryImpl<UserVocab, Integ
 		query.setMaxResults(limit);
 		return query.getResultList();
 	}
+	@Override
+    public List<UserVocab> searchByRomaji(Integer userId, String keyword) {
+        String hql = "SELECT uv FROM UserVocab uv JOIN Vocabulary v ON uv.vocabId = v.id " +
+                     "WHERE uv.userId = :userId AND LOWER(v.romaji) LIKE LOWER(:keyword)";
+        
+        // getSession() chỉ hoạt động ở đây vì lớp này kế thừa BaseRepositoryImpl
+        Query<UserVocab> query = getSession().createQuery(hql, UserVocab.class);
+        query.setParameter("userId", userId);
+        query.setParameter("keyword", "%" + keyword + "%");
+        
+        return query.getResultList();
+    }
 }
