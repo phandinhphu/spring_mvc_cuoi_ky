@@ -3,6 +3,7 @@ package com.cuoi_ky.repository;
 import com.cuoi_ky.model.PracticeHistory;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PracticeHistory Repository Interface
@@ -53,4 +54,15 @@ public interface PracticeHistoryRepository extends BaseRepository<PracticeHistor
      * Update practice history record wrong_count
      */
     void updateWrongCount(Integer userVocabId, int wrongCount);
+
+    /**
+     * 
+     * Get sum correct and wrong word
+     */
+	Object[] getTotalCorrectAndWrong(Integer userId);
+	
+	/**
+	 * Get count by mode practice
+	 */
+	Map<String, Long> getPracticeCountByMode(Integer userId);
 }

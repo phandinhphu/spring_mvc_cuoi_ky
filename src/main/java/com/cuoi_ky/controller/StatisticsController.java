@@ -37,36 +37,26 @@ public class StatisticsController {
         Integer userId = (Integer) session.getAttribute("userId");
         
         // Get real statistics from database
-        int currentStreak = statisticsService.getCurrentStreak(userId);
+        int streak = statisticsService.getCurrentStreak(userId);
+        double accuracy = statisticsService.getOverallAccuracy(userId);
+        long learnedWords = userVocabService.getSleepCount(userId);
         long totalWords = userVocabService.getTotalVocabularyCount(userId);
-        long masteredWords = userVocabService.getMasteredCount(userId);
-        double accuracy = totalWords > 0 ? (masteredWords * 100.0) / totalWords : 0;
         
-        model.addAttribute("currentStreak", currentStreak);
-        model.addAttribute("longestStreak", currentStreak); // Will track longest separately later
-        model.addAttribute("totalWords", totalWords);
-        model.addAttribute("learnedWords", masteredWords);
+        model.addAttribute("streak", streak);
         model.addAttribute("accuracy", String.format("%.1f", accuracy));
-        model.addAttribute("totalPracticeTime", 0); // Will track this later
+        model.addAttribute("learnedWords", learnedWords);
+        model.addAttribute("totalWords", totalWords);
         
-        // Get weekly progress from database
-        Map<String, Integer> weeklyData = statisticsService.getWeeklyProgress(userId);
-        List<Map<String, Object>> weeklyProgress = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : weeklyData.entrySet()) {
-            Map<String, Object> day = new HashMap<>();
-            day.put("day", entry.getKey());
-            day.put("words", entry.getValue());
-            weeklyProgress.add(day);
-        }
-        model.addAttribute("weeklyProgress", weeklyProgress);
+        Map<String, Long> modeDist = statisticsService.getPracticeModeDistribution(userId);
+        long totalPractice = modeDist.values().stream().mapToLong(Long::longValue).sum();
         
-        // Get vocabulary distribution
-        Map<String, Long> distribution = statisticsService.getVocabularyDistribution(userId);
         Map<String, Integer> practiceDistribution = new HashMap<>();
-        practiceDistribution.put("Mastered", distribution.get("mastered").intValue());
-        practiceDistribution.put("Learning", distribution.get("learning").intValue());
-        practiceDistribution.put("Review", distribution.get("review").intValue());
+        practiceDistribution.put("Trắc nghiệm", modeDist.getOrDefault("quiz", 0L).intValue());
+        practiceDistribution.put("Nghe", modeDist.getOrDefault("listening", 0L).intValue());
+        practiceDistribution.put("Nhập", modeDist.getOrDefault("fill", 0L).intValue());
+        
         model.addAttribute("practiceDistribution", practiceDistribution);
+        model.addAttribute("totalPractice", totalPractice);
         
         return "statistics/index";
     }

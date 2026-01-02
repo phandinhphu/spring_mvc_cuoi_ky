@@ -113,19 +113,26 @@ public class StatisticsServiceImpl implements StatisticsService {
         
         return weeklyData;
     }
-
+    
     @Override
-    public Map<String, Long> getVocabularyDistribution(Integer userId) {
-        Map<String, Long> distribution = new HashMap<>();
+    public double getOverallAccuracy(Integer userId) {
+        Object[] results = practiceHistoryRepository.getTotalCorrectAndWrong(userId);
         
-        long masteredCount = userVocabRepository.countByUserIdAndStatus(userId, "mastered");
-        long learningCount = userVocabRepository.countByUserIdAndStatus(userId, "learning");
-        long reviewCount = userVocabRepository.countByUserIdAndStatus(userId, "review");
-        
-        distribution.put("mastered", masteredCount);
-        distribution.put("learning", learningCount);
-        distribution.put("review", reviewCount);
-        
-        return distribution;
+        // results[0] là tổng đúng, results[1] là tổng sai
+        long correct = (results[0] != null) ? (long) results[0] : 0;
+        long wrong = (results[1] != null) ? (long) results[1] : 0;
+        long total = correct + wrong;
+
+        if (total == 0) {
+            return 0.0;
+        }
+
+        return (double) correct / total * 100;
     }
+
+	@Override
+	public Map<String, Long> getPracticeModeDistribution(Integer userId) {
+		return practiceHistoryRepository.getPracticeCountByMode(userId);
+	}
+
 }

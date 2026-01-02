@@ -7,7 +7,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PracticeHistory Repository Implementation
@@ -102,4 +104,34 @@ public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHi
         query.setParameter("userVocabId", userVocabId);
         query.executeUpdate();
     }
+    
+    @Override
+    public Object[] getTotalCorrectAndWrong(Integer userId) {
+        String hql = "SELECT SUM(ph.correctCount), SUM(ph.wrongCount) " +
+                     "FROM PracticeHistory ph " +
+                     "JOIN UserVocab uv ON ph.userVocabId = uv.id " +
+                     "WHERE uv.userId = :userId";
+        
+        Query<Object[]> query = getSession().createQuery(hql, Object[].class);
+        query.setParameter("userId", userId);
+        
+        return query.getSingleResult(); 
+    }
+
+	@Override
+	public Map<String, Long> getPracticeCountByMode(Integer userId) {
+		String hql = "SELECT ph.mode, COUNT(ph.id) FROM PracticeHistory ph, UserVocab uv " +
+                "WHERE ph.userVocabId = uv.id AND uv.userId = :userId " +
+                "GROUP BY ph.mode";
+	   
+	   Query<Object[]> query = getSession().createQuery(hql, Object[].class);
+	   query.setParameter("userId", userId);
+	   List<Object[]> results = query.getResultList();
+	   
+	   Map<String, Long> modeStats = new HashMap<>();
+	   for (Object[] result : results) {
+	       modeStats.put((String) result[0], (Long) result[1]);
+	   }
+	   return modeStats;
+	}
 }
