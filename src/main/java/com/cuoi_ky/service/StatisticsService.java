@@ -41,13 +41,13 @@ public interface StatisticsService {
     Map<String, Integer> getWeeklyProgress(Integer userId);
     
     /**
-     * Get vocabulary distribution by status
-     */
-    Map<String, Long> getVocabularyDistribution(Integer userId);
-
-    /**
      * 
      * Caculate percent
      */
 	double getOverallAccuracy(Integer userId);
+	
+	/**
+	 * Get count mode practice
+	 */
+	Map<String, Long> getPracticeModeDistribution(Integer userId);
 }

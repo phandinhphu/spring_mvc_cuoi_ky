@@ -113,21 +113,6 @@ public class StatisticsServiceImpl implements StatisticsService {
         
         return weeklyData;
     }
-
-    @Override
-    public Map<String, Long> getVocabularyDistribution(Integer userId) {
-        Map<String, Long> distribution = new HashMap<>();
-        
-        long masteredCount = userVocabRepository.countByUserIdAndStatus(userId, "mastered");
-        long learningCount = userVocabRepository.countByUserIdAndStatus(userId, "learning");
-        long reviewCount = userVocabRepository.countByUserIdAndStatus(userId, "review");
-        
-        distribution.put("mastered", masteredCount);
-        distribution.put("learning", learningCount);
-        distribution.put("review", reviewCount);
-        
-        return distribution;
-    }
     
     @Override
     public double getOverallAccuracy(Integer userId) {
@@ -144,4 +129,10 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         return (double) correct / total * 100;
     }
+
+	@Override
+	public Map<String, Long> getPracticeModeDistribution(Integer userId) {
+		return practiceHistoryRepository.getPracticeCountByMode(userId);
+	}
+
 }

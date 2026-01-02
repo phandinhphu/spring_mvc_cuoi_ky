@@ -39,22 +39,24 @@ public class StatisticsController {
         // Get real statistics from database
         int streak = statisticsService.getCurrentStreak(userId);
         double accuracy = statisticsService.getOverallAccuracy(userId);
+        long learnedWords = userVocabService.getSleepCount(userId);
         long totalWords = userVocabService.getTotalVocabularyCount(userId);
         
         model.addAttribute("streak", streak);
         model.addAttribute("accuracy", String.format("%.1f", accuracy));
+        model.addAttribute("learnedWords", learnedWords);
         model.addAttribute("totalWords", totalWords);
         
-        // Get weekly progress from database
-        Map<String, Integer> weeklyData = statisticsService.getWeeklyProgress(userId);
-        List<Map<String, Object>> weeklyProgress = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : weeklyData.entrySet()) {
-            Map<String, Object> day = new HashMap<>();
-            day.put("day", entry.getKey());
-            day.put("words", entry.getValue());
-            weeklyProgress.add(day);
-        }
-        model.addAttribute("weeklyProgress", weeklyProgress);
+        Map<String, Long> modeDist = statisticsService.getPracticeModeDistribution(userId);
+        long totalPractice = modeDist.values().stream().mapToLong(Long::longValue).sum();
+        
+        Map<String, Integer> practiceDistribution = new HashMap<>();
+        practiceDistribution.put("Trắc nghiệm", modeDist.getOrDefault("quiz", 0L).intValue());
+        practiceDistribution.put("Nghe", modeDist.getOrDefault("listening", 0L).intValue());
+        practiceDistribution.put("Nhập", modeDist.getOrDefault("fill", 0L).intValue());
+        
+        model.addAttribute("practiceDistribution", practiceDistribution);
+        model.addAttribute("totalPractice", totalPractice);
         
         return "statistics/index";
     }
