@@ -44,9 +44,6 @@
                         </div>
                         <div class="stat-value text-primary">${totalWords}</div>
                         <div class="stat-label">Tổng từ vựng</div>
-                        <div class="progress progress-custom mt-2">
-                            <div class="progress-bar bg-primary" style="width: 75%"></div>
-                        </div>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -56,9 +53,6 @@
                         </div>
                         <div class="stat-value text-success">${learnedWords}</div>
                         <div class="stat-label">Đã học</div>
-                        <div class="progress progress-custom mt-2">
-                            <div class="progress-bar bg-success" style="width: 56%"></div>
-                        </div>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -68,9 +62,6 @@
                         </div>
                         <div class="stat-value text-warning">${accuracy}%</div>
                         <div class="stat-label">Độ chính xác</div>
-                        <div class="progress progress-custom mt-2">
-                            <div class="progress-bar bg-warning" style="width: 87.5%"></div>
-                        </div>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -80,9 +71,6 @@
                         </div>
                         <div class="stat-value text-info">${streak}</div>
                         <div class="stat-label">Streak hiện tại</div>
-                        <div class="progress progress-custom mt-2">
-                            <div class="progress-bar bg-info" style="width: 60%"></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -122,105 +110,62 @@
                 </div>
             </div>
 
-            <!-- Today's Goal & Recent Activity -->
+            <!-- Recent Activity -->
             <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card h-100">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="fas fa-target me-2"></i>Mục tiêu hôm nay</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-4">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Học 20 từ mới</span>
-                                    <span class="fw-bold">12/20</span>
-                                </div>
-                                <div class="progress progress-custom">
-                                    <div class="progress-bar bg-primary progress-bar-animated" style="width: 60%"></div>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Hoàn thành 2 quiz</span>
-                                    <span class="fw-bold">1/2</span>
-                                </div>
-                                <div class="progress progress-custom">
-                                    <div class="progress-bar bg-success progress-bar-animated" style="width: 50%"></div>
-                                </div>
-                            </div>
-                            <div class="mb-4">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span>Luyện tập 30 phút</span>
-                                    <span class="fw-bold">18/30</span>
-                                </div>
-                                <div class="progress progress-custom">
-                                    <div class="progress-bar bg-warning progress-bar-animated" style="width: 60%"></div>
-                                </div>
-                            </div>
-                            <div class="alert alert-info mb-0">
-                                <i class="fas fa-lightbulb me-2"></i>
-                                Bạn đang làm rất tốt! Tiếp tục phát huy nhé!
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="col-lg-6">
                     <div class="card h-100">
                         <div class="card-header">
                             <h5 class="mb-0"><i class="fas fa-history me-2"></i>Hoạt động gần đây</h5>
                         </div>
                         <div class="card-body">
-                            <div class="list-group list-group-flush">
-                                <div class="list-group-item border-0 px-0">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3" style="width: 40px; height: 40px; font-size: 16px;">
-                                            <i class="fas fa-layer-group"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold">Luyện tập Flashcard</div>
-                                            <small class="text-muted">15 từ vựng - 5 phút trước</small>
-                                        </div>
-                                        <span class="badge bg-primary">+15 XP</span>
+                            <c:choose>
+                                <c:when test="${empty recentPractices}">
+                                    <div class="text-center py-4">
+                                        <p class="text-muted">Chưa có hoạt động nào</p>
                                     </div>
-                                </div>
-                                <div class="list-group-item border-0 px-0">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stat-icon bg-success bg-opacity-10 text-success me-3" style="width: 40px; height: 40px; font-size: 16px;">
-                                            <i class="fas fa-question-circle"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold">Hoàn thành Quiz cơ bản</div>
-                                            <small class="text-muted">Điểm: 80/100 - 1 giờ trước</small>
-                                        </div>
-                                        <span class="badge bg-success">+25 XP</span>
+                                </c:when>
+                                <c:otherwise>
+                                    <div class="list-group list-group-flush">
+                                        <c:forEach var="practice" items="${recentPractices}">
+                                            <div class="list-group-item border-0 px-0">
+                                                <div class="d-flex align-items-center">
+                                                    <c:choose>
+                                                        <c:when test="${practice.mode == 'flashcard'}">
+                                                            <div class="stat-icon bg-primary bg-opacity-10 text-primary me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                                                <i class="fas fa-layer-group"></i>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:when test="${practice.mode == 'quiz'}">
+                                                            <div class="stat-icon bg-success bg-opacity-10 text-success me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                                                <i class="fas fa-question-circle"></i>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:when test="${practice.mode == 'listening'}">
+                                                            <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                                                <i class="fas fa-headphones"></i>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:when test="${practice.mode == 'fill'}">
+                                                            <div class="stat-icon bg-info bg-opacity-10 text-info me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                                                <i class="fas fa-pen"></i>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <div class="stat-icon bg-secondary bg-opacity-10 text-secondary me-3" style="width: 40px; height: 40px; font-size: 16px;">
+                                                                <i class="fas fa-book"></i>
+                                                            </div>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                    <div class="flex-grow-1">
+                                                        <div class="fw-semibold">${practice.description}</div>
+                                                        <small class="text-muted">${practice.timeAgo}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </c:forEach>
                                     </div>
-                                </div>
-                                <div class="list-group-item border-0 px-0">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stat-icon bg-info bg-opacity-10 text-info me-3" style="width: 40px; height: 40px; font-size: 16px;">
-                                            <i class="fas fa-book"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold">Thêm từ vào sổ tay</div>
-                                            <small class="text-muted">5 từ mới - 2 giờ trước</small>
-                                        </div>
-                                        <span class="badge bg-info">+5 XP</span>
-                                    </div>
-                                </div>
-                                <div class="list-group-item border-0 px-0">
-                                    <div class="d-flex align-items-center">
-                                        <div class="stat-icon bg-warning bg-opacity-10 text-warning me-3" style="width: 40px; height: 40px; font-size: 16px;">
-                                            <i class="fas fa-headphones"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="fw-semibold">Luyện nghe</div>
-                                            <small class="text-muted">10 từ vựng - Hôm qua</small>
-                                        </div>
-                                        <span class="badge bg-warning">+10 XP</span>
-                                    </div>
-                                </div>
-                            </div>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
                 </div>

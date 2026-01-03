@@ -1,5 +1,6 @@
 package com.cuoi_ky.service.impl;
 
+import com.cuoi_ky.dto.RecentPracticeDTO;
 import com.cuoi_ky.model.DailyStreak;
 import com.cuoi_ky.model.UserVocab;
 import com.cuoi_ky.repository.DailyStreakRepository;
@@ -133,6 +134,11 @@ public class StatisticsServiceImpl implements StatisticsService {
 	@Override
 	public Map<String, Long> getPracticeModeDistribution(Integer userId) {
 		return practiceHistoryRepository.getPracticeCountByMode(userId);
+	}
+
+	@Override
+	public List<RecentPracticeDTO> getRecentPracticeHistory(Integer userId) {
+		return practiceHistoryRepository.getRecentPracticeHistory(userId);
 	}
 
 }

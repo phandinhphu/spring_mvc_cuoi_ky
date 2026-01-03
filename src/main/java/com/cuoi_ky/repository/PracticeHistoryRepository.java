@@ -1,5 +1,6 @@
 package com.cuoi_ky.repository;
 
+import com.cuoi_ky.dto.RecentPracticeDTO;
 import com.cuoi_ky.model.PracticeHistory;
 import java.util.Date;
 import java.util.List;
@@ -65,4 +66,9 @@ public interface PracticeHistoryRepository extends BaseRepository<PracticeHistor
 	 * Get count by mode practice
 	 */
 	Map<String, Long> getPracticeCountByMode(Integer userId);
+	
+	/**
+	 * Get recent practice history
+	 */
+	List<RecentPracticeDTO> getRecentPracticeHistory(Integer userId);
 }

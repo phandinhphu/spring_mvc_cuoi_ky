@@ -1,5 +1,6 @@
 package com.cuoi_ky.service;
 
+import com.cuoi_ky.dto.RecentPracticeDTO;
 import com.cuoi_ky.model.DailyStreak;
 import java.util.Date;
 import java.util.List;
@@ -50,4 +51,9 @@ public interface StatisticsService {
 	 * Get count mode practice
 	 */
 	Map<String, Long> getPracticeModeDistribution(Integer userId);
+	
+	/**
+	 * Get recent practice history
+	 */
+	List<RecentPracticeDTO> getRecentPracticeHistory(Integer userId);
 }

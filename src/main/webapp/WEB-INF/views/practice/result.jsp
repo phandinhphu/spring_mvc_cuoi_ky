@@ -89,7 +89,7 @@
         <a href="${pageContext.request.contextPath}/practice/" class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-pill shadow-sm">
             Luyện tập tiếp
         </a>
-        <a href="${pageContext.request.contextPath}/" class="btn btn-outline-secondary btn-lg px-5 py-3 rounded-pill">
+        <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-outline-secondary btn-lg px-5 py-3 rounded-pill">
             Về trang chủ
         </a>
     </div>

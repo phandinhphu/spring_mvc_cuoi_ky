@@ -167,6 +167,8 @@ public class PracticeController {
                 history.setWrongCount(wrong);
                 history.setMode(mode);
                 history.setPracticeDate(now);
+                
+                System.out.println("Mode: " + mode + ", UserVocabId: " + userVocabId + ", Correct: " + correct + ", Wrong: " + wrong);
 
                 historyToSave.add(history);
                 

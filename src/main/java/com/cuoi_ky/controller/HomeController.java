@@ -1,5 +1,6 @@
 package com.cuoi_ky.controller;
 
+import com.cuoi_ky.dto.RecentPracticeDTO;
 import com.cuoi_ky.service.StatisticsService;
 import com.cuoi_ky.service.UserVocabService;
 import com.cuoi_ky.service.VocabularyService;
@@ -9,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 /**
  * Home Controller
@@ -32,9 +34,8 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        // Landing page - no authentication required
-        model.addAttribute("totalVocab", vocabularyService.getTotalCount());
-        return "index";
+    	// Redirect to dashboard for logged in users
+		return "redirect:/dashboard";
     }
 
     @GetMapping("/dashboard")
@@ -51,11 +52,15 @@ public class HomeController {
         // Total accuracy of all practiced vocabularies
         Double accuracy = statisticsService.getTotalAccuracy(userId);
         
+        // Get recent practice history
+        List<RecentPracticeDTO> recentPractices = statisticsService.getRecentPracticeHistory(userId);
+        
         model.addAttribute("username", username); // Will get from User entity later
         model.addAttribute("streak", currentStreak);
         model.addAttribute("totalWords", totalWords);
         model.addAttribute("learnedWords", masteredWords);
         model.addAttribute("accuracy", String.format("%.1f", accuracy));
+        model.addAttribute("recentPractices", recentPractices);
         
         return "dashboard/index";
     }
