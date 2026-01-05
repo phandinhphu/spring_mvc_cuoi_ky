@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
@@ -140,5 +141,20 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         
         return user.getAvatar();
+	}
+
+	@Override
+	public boolean updateForgotPasswordToken(Integer id, String token, LocalDateTime expiry) {
+		return userRepository.updateForgotPasswordToken(id, token, expiry);
+	}
+
+	@Override
+	public boolean resetPassword(String token, String newPassword) {
+		return userRepository.resetPassword(token, passwordEncoder.encode(newPassword));
+	}
+
+	@Override
+	public Optional<User> getUserByForgotPasswordToken(String token) {
+		return userRepository.findByForgotPasswordToken(token);
 	}
 }

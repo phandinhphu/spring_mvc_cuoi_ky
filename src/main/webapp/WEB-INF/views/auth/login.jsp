@@ -59,13 +59,6 @@
                                 </div>
                             </div>
 
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="rememberMe">
-                                <label class="form-check-label" for="rememberMe">
-                                    Ghi nhớ đăng nhập
-                                </label>
-                            </div>
-
                             <div class="d-grid mb-3">
                                 <button type="submit" class="btn btn-primary btn-lg btn-custom">
                                     <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
@@ -73,7 +66,7 @@
                             </div>
 
                             <div class="text-center mb-3">
-                                <a href="#" class="text-decoration-none">Quên mật khẩu?</a>
+                                <a href="${pageContext.request.contextPath}/auth/forgot-password" class="text-decoration-none">Quên mật khẩu?</a>
                             </div>
 
                             <hr class="my-4">

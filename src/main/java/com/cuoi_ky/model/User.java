@@ -1,6 +1,8 @@
 package com.cuoi_ky.model;
 
 import javax.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -29,12 +31,18 @@ public class User {
 
 	@Column(name = "avatar", length = 100)
 	private String avatar;
-	
+
 	@Column(name = "avatar_public_id", length = 100)
 	private String avatarPublicId;
 
 	@Column(name = "google_id", length = 100)
 	private String googleId;
+
+	@Column(name = "forgot_password_token", length = 255)
+	private String forgotPasswordToken;
+
+	@Column(name = "forgot_password_token_expiry")
+	private LocalDateTime forgotPasswordTokenExpiry;
 
 	public User() {
 	}
@@ -117,5 +125,21 @@ public class User {
 
 	public void setAvatarPublicId(String avater_public_id) {
 		this.avatarPublicId = avater_public_id;
+	}
+
+	public String getForgotPasswordToken() {
+		return forgotPasswordToken;
+	}
+
+	public void setForgotPasswordToken(String forgotPasswordToken) {
+		this.forgotPasswordToken = forgotPasswordToken;
+	}
+
+	public LocalDateTime getForgotPasswordTokenExpiry() {
+		return forgotPasswordTokenExpiry;
+	}
+
+	public void setForgotPasswordTokenExpiry(LocalDateTime forgotPasswordTokenExpiry) {
+		this.forgotPasswordTokenExpiry = forgotPasswordTokenExpiry;
 	}
 }

@@ -6,11 +6,9 @@ import org.hibernate.query.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-/**
- * User Repository Implementation
- */
 @Repository
 @Transactional
 public class UserRepositoryImpl extends BaseRepositoryImpl<User, Integer> 
@@ -31,6 +29,14 @@ public class UserRepositoryImpl extends BaseRepositoryImpl<User, Integer>
         query.setParameter("email", email);
         return query.uniqueResultOptional();
     }
+    
+    @Override
+    public Optional<User> findByForgotPasswordToken(String token) {
+		String hql = "FROM User u WHERE u.forgotPasswordToken = :token";
+		Query<User> query = getSession().createQuery(hql, User.class);
+		query.setParameter("token", token);
+		return query.uniqueResultOptional();
+	}
 
     @Override
     public boolean existsByUsername(String username) {
@@ -78,6 +84,32 @@ public class UserRepositoryImpl extends BaseRepositoryImpl<User, Integer>
 		Query query = getSession().createQuery(hql);
 		query.setParameter("avatar", avatar);
 		query.setParameter("id", id);
+		
+		return query.executeUpdate() > 0;
+	}
+
+	@Override
+	public boolean updateForgotPasswordToken(Integer id, String token, LocalDateTime expiry) {
+		String hql = "UPDATE User u SET u.forgotPasswordToken = :token, "
+				+ "u.forgotPasswordTokenExpiry = :expiry WHERE u.id = :id";
+		
+		Query query = getSession().createQuery(hql);
+		query.setParameter("token", token);
+		query.setParameter("expiry", expiry);
+		query.setParameter("id", id);
+		
+		return query.executeUpdate() > 0;
+	}
+
+	@Override
+	public boolean resetPassword(String token, String newPassword) {
+		String hql = "UPDATE User u SET u.password = :newPassword, "
+				+ "u.forgotPasswordToken = null, u.forgotPasswordTokenExpiry = null "
+				+ "WHERE u.forgotPasswordToken = :token";
+		
+		Query query = getSession().createQuery(hql);
+		query.setParameter("newPassword", newPassword);
+		query.setParameter("token", token);
 		
 		return query.executeUpdate() > 0;
 	}

@@ -2,6 +2,8 @@ package com.cuoi_ky.service;
 
 import com.cuoi_ky.dto.GoogleUser;
 import com.cuoi_ky.model.User;
+
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +39,11 @@ public interface UserService {
     Optional<User> getUserByUsername(String username);
     
     /**
+	 * Get user by token
+	 */
+	Optional<User> getUserByForgotPasswordToken(String token);
+    
+    /**
      * Check if username exists
      */
     boolean isUsernameExists(String username);
@@ -60,4 +67,15 @@ public interface UserService {
      * Update avatar
      */
     String updateAvatar(Integer id, MultipartFile file) throws Exception;
+    
+    /**
+	 * Update forgot password token and expiry
+	 */
+    boolean updateForgotPasswordToken(Integer id, String token, 
+			LocalDateTime expiry);
+    
+    /**
+     * Reset password using token
+     */
+    boolean resetPassword(String token, String newPassword);
 }

@@ -3,6 +3,7 @@ package com.cuoi_ky.controller;
 import com.cuoi_ky.dto.GoogleUser;
 import com.cuoi_ky.model.User;
 import com.cuoi_ky.service.UserService;
+import com.cuoi_ky.util.MailUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -25,7 +26,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/auth")
@@ -39,10 +42,12 @@ public class AuthController {
 	private String GOOGLE_REDIRECT_URI;
 
 	private final UserService userService;
+	private final MailUtil mailUtil;
 
 	@Autowired
-	public AuthController(UserService userService) {
+	public AuthController(UserService userService, MailUtil mailUtil) {
 		this.userService = userService;
+		this.mailUtil = mailUtil;
 	}
 
 	@GetMapping("/oauth2/authorize/google")
@@ -90,7 +95,65 @@ public class AuthController {
 		
 		return "redirect:/dashboard";
 	}
+	
+	@GetMapping("/forgot-password")
+	public String forgotPassword(Model model) {
+		return "auth/forgot-password";
+	}
+	
+	@GetMapping("/reset-password")
+	public String resetPassword(@RequestParam("token") String token, Model model) {
+		User user = userService.getUserByForgotPasswordToken(token).orElse(null);
+		
+		if (user == null || user.getForgotPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+			model.addAttribute("error", "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+			return "error/404";
+		}
+		
+		
+		model.addAttribute("token", token);
+		return "auth/reset-password";
+	}
+	
+	@PostMapping("/forgot-password")
+	public String processForgotPassword(@RequestParam("email") String email, Model model) {
+		Optional<User> userOpt = userService.getUserByUsername(email);
+		
+		if (userOpt.isPresent()) {
+			User user = userOpt.get();
+			// Tạo token và expiry
+			String token = UUID.randomUUID().toString();
+			LocalDateTime expiry = LocalDateTime.now().plusMinutes(15);
+			
+			userService.updateForgotPasswordToken(user.getId(), token, expiry);
 
+			String resetLink = "http://localhost:8080/cuoi_ky/auth/reset-password?token=" + token;
+			
+			mailUtil.sendMail(email, "Đặt lại mật khẩu", 
+					"Nhấp vào liên kết sau để đặt lại mật khẩu của bạn: " + resetLink);
+		}
+		
+		// Luôn hiển thị thông báo thành công để tránh lộ thông tin người dùng
+		model.addAttribute("message", "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.");
+		return "auth/forgot-password";
+	}
+
+	@PostMapping("/reset-password")
+	public String processResetPassword(@RequestParam("token") String token,
+			@RequestParam("password") String password,
+			@RequestParam("confirmPassword") String confirmPassword,
+			Model model) {
+		boolean success = userService.resetPassword(token, password);
+		
+		if (success) {
+			model.addAttribute("message", "Mật khẩu của bạn đã được đặt lại thành công. Vui lòng đăng nhập.");
+			return "auth/login";
+		} else {
+			model.addAttribute("error", "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn.");
+			return "auth/reset-password";
+		}
+	}
+	
 	@PostMapping("/login")
 	public String processLogin(@RequestParam String username, @RequestParam String password, Model model,
 			HttpSession session) {
