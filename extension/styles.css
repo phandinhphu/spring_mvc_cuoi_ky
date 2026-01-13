@@ -1,0 +1,227 @@
+/* Tooltip Styles for Japanese Learning Extension */
+
+.japanese-learning-tooltip {
+  position: absolute;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 
+              0 0 0 1px rgba(255, 255, 255, 0.1);
+  min-width: 320px;
+  max-width: 480px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
+               'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  z-index: 2147483647;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.japanese-learning-tooltip.jl-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.jl-tooltip-header {
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px 12px 0 0;
+}
+
+.jl-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.jl-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.jl-tooltip-content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.jl-tooltip-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.jl-tooltip-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.jl-tooltip-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+.jl-tooltip-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.jl-full-translation {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.jl-full-translation strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.jl-words-section strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.jl-word-item {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(5px);
+  transition: all 0.2s;
+}
+
+.jl-word-item:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(2px);
+}
+
+.jl-word-item.jl-new {
+  border-left-color: #fbbf24;
+}
+
+.jl-word-item.jl-existing {
+  border-left-color: #34d399;
+}
+
+.jl-word-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.jl-word-text {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.jl-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #34d399;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.jl-badge.jl-new-badge {
+  background: #fbbf24;
+  color: #1f2937;
+}
+
+.jl-word-meaning {
+  font-size: 14px;
+  margin-bottom: 4px;
+  opacity: 0.95;
+}
+
+.jl-word-romaji,
+.jl-word-reading {
+  font-size: 12px;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.jl-tooltip-footer {
+  padding: 10px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 12px 12px;
+  text-align: center;
+}
+
+.jl-tooltip-footer small {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* Loading State */
+.jl-loading .jl-tooltip-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.jl-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: jl-spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes jl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.jl-error {
+  color: #fca5a5;
+  text-align: center;
+  padding: 8px;
+  background: rgba(220, 38, 38, 0.2);
+  border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .japanese-learning-tooltip {
+    min-width: 280px;
+    max-width: calc(100vw - 40px);
+  }
+}

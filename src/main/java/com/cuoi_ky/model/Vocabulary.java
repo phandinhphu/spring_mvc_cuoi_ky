@@ -6,41 +6,44 @@ import java.util.Date;
 @Entity
 @Table(name = "vocabulary")
 public class Vocabulary {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    
+
     @Column(name = "word", nullable = false, length = 100)
     private String word;
-    
+
     @Column(name = "meaning", nullable = false, length = 255)
     private String meaning;
-    
+
     @Column(name = "romaji", length = 100)
     private String romaji;
-    
+
     @Column(name = "hiragana", length = 100)
     private String hiragana;
-    
+
     @Column(name = "katakana", length = 100)
     private String katakana;
-    
+
     @Column(name = "kanji", length = 100)
     private String kanji;
-    
+
     @Column(name = "audio_url", length = 255)
     private String audioUrl;
-    
+
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
+    @Column(name = "user_id")
+    private Integer userId; // Optional: track who added this vocabulary
+
     public Vocabulary() {
     }
 
-    public Vocabulary(Integer id, String word, String meaning, String romaji, String hiragana, 
-                     String katakana, String kanji, String audioUrl, Date createdAt) {
+    public Vocabulary(Integer id, String word, String meaning, String romaji, String hiragana,
+            String katakana, String kanji, String audioUrl, Date createdAt) {
         this.id = id;
         this.word = word;
         this.meaning = meaning;
@@ -122,5 +125,13 @@ public class Vocabulary {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

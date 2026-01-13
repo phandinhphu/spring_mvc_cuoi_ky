@@ -12,8 +12,10 @@ import java.util.Optional;
 
 /**
  * Vocabulary Service Implementation
- * Following Single Responsibility Principle - handles only business logic for vocabulary
- * Following Dependency Inversion Principle - depends on VocabularyRepository interface
+ * Following Single Responsibility Principle - handles only business logic for
+ * vocabulary
+ * Following Dependency Inversion Principle - depends on VocabularyRepository
+ * interface
  */
 @Service
 @Transactional
@@ -49,9 +51,9 @@ public class VocabularyServiceImpl implements VocabularyService {
         if (keyword == null || keyword.trim().isEmpty()) {
             return getAllVocabularies();
         }
-        
+
         String cleanKeyword = keyword.trim();
-        
+
         switch (type.toLowerCase()) {
             case "word":
                 return vocabularyRepository.findByWord(cleanKeyword);
@@ -83,5 +85,22 @@ public class VocabularyServiceImpl implements VocabularyService {
     @Override
     public long getTotalCount() {
         return vocabularyRepository.count();
+    }
+
+    @Override
+    public Optional<Vocabulary> findByWordExact(String word) {
+        if (word == null || word.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        List<Vocabulary> results = vocabularyRepository.findByWord(word.trim());
+        // Return first exact match
+        return results.stream()
+                .filter(v -> v.getWord().equals(word.trim()))
+                .findFirst();
+    }
+
+    @Override
+    public Vocabulary createVocabulary(Vocabulary vocabulary) {
+        return vocabularyRepository.save(vocabulary);
     }
 }

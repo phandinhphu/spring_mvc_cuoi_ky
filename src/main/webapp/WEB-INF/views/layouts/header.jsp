@@ -45,11 +45,6 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/quiz/">
-                        <i class="fas fa-question-circle me-1"></i>Quiz
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="${pageContext.request.contextPath}/statistics/">
                         <i class="fas fa-chart-line me-1"></i>Thống kê
                     </a>

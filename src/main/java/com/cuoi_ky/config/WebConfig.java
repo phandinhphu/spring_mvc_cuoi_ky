@@ -14,7 +14,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 @EnableWebMvc
 @ComponentScan(basePackages = "com.cuoi_ky.controller")
 public class WebConfig implements WebMvcConfigurer {
-	
+
 	@Bean
 	public InternalResourceViewResolver viewResolver() {
 		InternalResourceViewResolver resolver = new InternalResourceViewResolver();
@@ -22,27 +22,28 @@ public class WebConfig implements WebMvcConfigurer {
 		resolver.setSuffix(".jsp");
 		return resolver;
 	}
-	
+
 	@Bean
 	public AuthInterceptor authInterceptor() {
 		return new AuthInterceptor();
 	}
-	
+
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		registry.addResourceHandler("/resources/**")
 				.addResourceLocations("/resources/");
 	}
-	
+
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(authInterceptor())
 				.addPathPatterns("/**") // Apply to all paths
 				.excludePathPatterns(
-					"/auth/**",           // Exclude auth pages (login, register)
-					"/resources/**",      // Exclude static resources
-					"/"                   // Exclude landing page
+						"/auth/**", // Exclude auth pages (login, register)
+						"/resources/**", // Exclude static resources
+						"/", // Exclude landing page
+						"/api/**" // Exclude API endpoints (extension)
 				);
 	}
-	
+
 }
