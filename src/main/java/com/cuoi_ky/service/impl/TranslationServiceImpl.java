@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 
 /**
  * Translation Service Implementation
- * Handles Japanese text tokenization, translation, and vocabulary management
- * Uses MyMemory API for translation
+ * Xử lý dịch từ tiếng Nhật sang tiếng Việt
+ * Sử dung API MyMemory (miễn phí) để dịch
  */
 @Service
 public class TranslationServiceImpl implements TranslationService {
@@ -69,13 +69,13 @@ public class TranslationServiceImpl implements TranslationService {
                 return response;
             }
 
-            // Tokenize Japanese text
+            // Tách từ
             List<String> tokens = tokenizeJapanese(normalizedText);
 
-            // Process each token
+            // Xử lý từng từ
             List<WordTranslation> wordTranslations = new ArrayList<>();
             for (String token : tokens) {
-                // Skip particles and very short tokens
+                // Bỏ qua từ quá ngắn trừ khi là Kanji
                 if (token.length() > 1 || JapaneseUtils.isKanji(token.charAt(0))) {
                     WordTranslation wt = getOrCreateVocabulary(token, userId);
                     if (wt != null) {
@@ -167,7 +167,7 @@ public class TranslationServiceImpl implements TranslationService {
                 newVocab.setWord(word);
                 newVocab.setMeaning(meaning);
 
-                // Try to extract different forms
+                // Cố gắng lấy kana và romaji
                 List<Token> tokens = tokenizer.tokenize(word);
                 if (!tokens.isEmpty()) {
                     Token token = tokens.get(0);
@@ -178,7 +178,7 @@ public class TranslationServiceImpl implements TranslationService {
                     }
                 }
 
-                // Extract kanji if present
+                // Lấy Kanji nếu có
                 String kanji = JapaneseUtils.extractKanji(word);
                 if (!kanji.isEmpty()) {
                     newVocab.setKanji(kanji);

@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 
 /**
- * Translation API Controller for Browser Extension
- * Handles translation requests from the Japanese learning extension
+ * Translation API Controller cho Browser Extension
+ * Dùng để dịch văn bản tiếng Nhật và trả về kết quả JSON
  */
 @RestController
 @RequestMapping("/api/translate")
-@CrossOrigin(origins = "*", allowedHeaders = "*") // Allow CORS for extension
+@CrossOrigin(origins = "*", allowedHeaders = "*") // Cho phép CORS từ mọi nguồn
 public class TranslationController {
 
     private final TranslationService translationService;
@@ -37,13 +37,13 @@ public class TranslationController {
             HttpSession session) {
 
         try {
-            // Get user ID from request or session
+            // Lấy userId từ request hoặc session
             Integer userId = request.getUserId();
             if (userId == null) {
                 userId = (Integer) session.getAttribute("userId");
             }
 
-            // Process translation
+            // Tiến hành dịch và xử lý
             TranslationResponse response = translationService.translateAndProcess(
                     request.getText(),
                     userId);
@@ -60,7 +60,7 @@ public class TranslationController {
     }
 
     /**
-     * Health check endpoint for extension
+     * Health check endpoint cho extension
      */
     @GetMapping("/health")
     public ResponseEntity<String> health() {

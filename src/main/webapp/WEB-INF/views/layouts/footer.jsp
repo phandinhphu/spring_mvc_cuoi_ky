@@ -30,3 +30,40 @@
         </div>
     </div>
 </footer>
+
+<!-- Chatbot Widget -->
+<!-- 1. CSS Styles -->
+<link href="${pageContext.request.contextPath}/resources/css/chat.css" rel="stylesheet">
+
+<!-- 2. Chat Button -->
+<div class="chat-widget-btn" id="chatWidgetBtn">
+    <i class="fas fa-comments"></i>
+</div>
+
+<!-- 3. Chat Window -->
+<div class="chat-window" id="chatWindow">
+    <div class="chat-header">
+        <h5>
+		   	<span>Thời gian phản hồi đôi lúc hơi lâu, mong bạn thông cảm!</span>
+		   	<br/>
+        	<i class="fas fa-robot me-2"></i>Trợ lý tiếng Nhật
+       	</h5>
+        <button class="close-chat-btn" id="closeChatBtn">&times;</button>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+        <!-- Tin nhắn sẽ được thêm vào đây bằng JS -->
+    </div>
+    <div class="typing-indicator" id="typingIndicator">Bot đang nhập...</div>
+    
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Hỏi gì đó (Ví dụ: 'Mèo nghĩa là gì?')...">
+        <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<!-- 4. Scripts -->
+<script>
+    var contextPath = "${pageContext.request.contextPath}";
+</script>
+<script src="${pageContext.request.contextPath}/resources/js/chat.js"></script>

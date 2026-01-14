@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Repository
 @Transactional
-public class ExampleRepositoryImpl extends BaseRepositoryImpl<Example, Integer> 
+public class ExampleRepositoryImpl extends BaseRepositoryImpl<Example, Integer>
         implements ExampleRepository {
 
     @Override
@@ -21,6 +21,20 @@ public class ExampleRepositoryImpl extends BaseRepositoryImpl<Example, Integer>
         String hql = "FROM Example e WHERE e.vocabId = :vocabId";
         Query<Example> query = getSession().createQuery(hql, Example.class);
         query.setParameter("vocabId", vocabId);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<Example> searchByKeyword(String keyword) {
+        // Tìm kiếm ví dụ có chứa từ khóa trong câu tiếng Nhật hoặc bản dịch tiếng Việt
+        String hql = "FROM Example e WHERE " +
+                "LOWER(e.exampleSentence) LIKE LOWER(:keyword) OR " +
+                "LOWER(e.translation) LIKE LOWER(:keyword)";
+
+        Query<Example> query = getSession().createQuery(hql, Example.class);
+        query.setParameter("keyword", "%" + keyword + "%");
+        // Giới hạn kết quả để tránh quá tải context
+        query.setMaxResults(10);
         return query.getResultList();
     }
 }

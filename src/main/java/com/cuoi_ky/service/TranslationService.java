@@ -6,12 +6,12 @@ import java.util.List;
 
 /**
  * Translation Service Interface
- * Handles Japanese text translation and vocabulary management
+ * Xử lý dịch thuật và quản lý từ vựng
  */
 public interface TranslationService {
 
     /**
-     * Translate Japanese text and process vocabulary
+     * Dùng để dịch và xử lý văn bản tiếng Nhật
      * 
      * @param japaneseText - Japanese text to translate (word or sentence)
      * @param userId       - Optional user ID for tracking
@@ -20,7 +20,7 @@ public interface TranslationService {
     TranslationResponse translateAndProcess(String japaneseText, Integer userId);
 
     /**
-     * Tokenize Japanese text into words
+     * Dùng để tách từ trong văn bản tiếng Nhật
      * 
      * @param text - Japanese text
      * @return List of tokenized words
@@ -28,7 +28,7 @@ public interface TranslationService {
     List<String> tokenizeJapanese(String text);
 
     /**
-     * Translate Japanese word to Vietnamese/English
+     * Dịch một từ tiếng Nhật
      * 
      * @param word - Japanese word
      * @return Translated meaning
@@ -36,9 +36,9 @@ public interface TranslationService {
     String translateWord(String word);
 
     /**
-     * Get or create vocabulary entry
-     * If word exists in database, return it
-     * If not, translate and create new entry
+     * Lấy hoặc tạo mới từ vựng trong database
+     * Nếu từ đã tồn tại, trả về bản dịch
+     * Không thì tạo mới từ và trả về bản dịch
      * 
      * @param word   - Japanese word
      * @param userId - Optional user ID
