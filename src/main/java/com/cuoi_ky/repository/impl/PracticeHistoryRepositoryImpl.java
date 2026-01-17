@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Repository
 @Transactional
-public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHistory, Integer> 
+public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHistory, Integer>
         implements PracticeHistoryRepository {
 
     @Override
@@ -86,9 +86,9 @@ public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHi
     @Override
     public void updateCorrectCount(Integer userVocabId, int correctCount) {
         String hql = "UPDATE PracticeHistory ph SET " +
-        "ph.correctCount = :correctCount, " +
-        "ph.practiceDate = CURRENT_TIMESTAMP " +
-        "WHERE ph.userVocabId = :userVocabId";
+                "ph.correctCount = :correctCount, " +
+                "ph.practiceDate = CURRENT_TIMESTAMP " +
+                "WHERE ph.userVocabId = :userVocabId";
         Query<?> query = getSession().createQuery(hql);
         query.setParameter("correctCount", correctCount);
         query.setParameter("userVocabId", userVocabId);
@@ -98,109 +98,119 @@ public class PracticeHistoryRepositoryImpl extends BaseRepositoryImpl<PracticeHi
     @Override
     public void updateWrongCount(Integer userVocabId, int wrongCount) {
         String hql = "UPDATE PracticeHistory ph SET " +
-        "ph.wrongCount = :wrongCount, " +
-        "ph.practiceDate = CURRENT_TIMESTAMP " +
-        "WHERE ph.userVocabId = :userVocabId";
+                "ph.wrongCount = :wrongCount, " +
+                "ph.practiceDate = CURRENT_TIMESTAMP " +
+                "WHERE ph.userVocabId = :userVocabId";
         Query<?> query = getSession().createQuery(hql);
         query.setParameter("wrongCount", wrongCount);
         query.setParameter("userVocabId", userVocabId);
         query.executeUpdate();
     }
-    
+
     @Override
     public Object[] getTotalCorrectAndWrong(Integer userId) {
         String hql = "SELECT SUM(ph.correctCount), SUM(ph.wrongCount) " +
-                     "FROM PracticeHistory ph " +
-                     "JOIN UserVocab uv ON ph.userVocabId = uv.id " +
-                     "WHERE uv.userId = :userId";
-        
+                "FROM PracticeHistory ph " +
+                "JOIN UserVocab uv ON ph.userVocabId = uv.id " +
+                "WHERE uv.userId = :userId";
+
         Query<Object[]> query = getSession().createQuery(hql, Object[].class);
         query.setParameter("userId", userId);
-        
-        return query.getSingleResult(); 
+
+        return query.getSingleResult();
     }
 
-	@Override
-	public Map<String, Long> getPracticeCountByMode(Integer userId) {
-		String hql = "SELECT ph.mode, COUNT(ph.id) FROM PracticeHistory ph, UserVocab uv " +
+    @Override
+    public Map<String, Long> getPracticeCountByMode(Integer userId) {
+        String hql = "SELECT ph.mode, COUNT(ph.id) FROM PracticeHistory ph, UserVocab uv " +
                 "WHERE ph.userVocabId = uv.id AND uv.userId = :userId " +
                 "GROUP BY ph.mode";
-	   
-	   Query<Object[]> query = getSession().createQuery(hql, Object[].class);
-	   query.setParameter("userId", userId);
-	   List<Object[]> results = query.getResultList();
-	   
-	   Map<String, Long> modeStats = new HashMap<>();
-	   for (Object[] result : results) {
-	       modeStats.put((String) result[0], (Long) result[1]);
-	   }
-	   return modeStats;
-	}
 
-	@Override
-	public List<RecentPracticeDTO> getRecentPracticeHistory(Integer userId) {
-		String hql = "SELECT ph.mode, MAX(ph.practiceDate) as latestDate " +
-		             "FROM PracticeHistory ph " +
-		             "JOIN UserVocab uv ON ph.userVocabId = uv.id " +
-		             "WHERE uv.userId = :userId " +
-		             "AND ph.mode IN ('quiz', 'listening', 'fill', 'flashcard') " +
-		             "GROUP BY ph.mode " +
-		             "ORDER BY latestDate ASC";
-		
-		Query<Object[]> query = getSession().createQuery(hql, Object[].class);
-		query.setParameter("userId", userId);
-		query.setMaxResults(4); // Limit to 4 most recent activities
-		
-		List<Object[]> results = query.getResultList();
-		List<RecentPracticeDTO> recentPractices = new ArrayList<>();
-		
-		for (Object[] result : results) {
-			String mode = (String) result[0];
-			Date practiceDate = (Date) result[1];
-			
-			RecentPracticeDTO dto = new RecentPracticeDTO();
-			dto.setMode(mode);
-			dto.setPracticeDate(practiceDate);
-			dto.setDescription(getDescriptionByMode(mode));
-			dto.setTimeAgo(calculateTimeAgo(practiceDate));
-			
-			recentPractices.add(dto);
-		}
-		
-		return recentPractices;
-	}
-	
-	private String getDescriptionByMode(String mode) {
-		switch (mode) {
-			case "flashcard":
-				return "Luyện tập Flashcard";
-			case "quiz":
-				return "Hoàn thành Quiz";
-			case "listening":
-				return "Luyện nghe";
-			case "fill":
-				return "Điền từ";
-			default:
-				return "Luyện tập";
-		}
-	}
-	
-	private String calculateTimeAgo(Date practiceDate) {
-		long diffInMillis = Math.abs(System.currentTimeMillis() - practiceDate.getTime());
-		long diffInMinutes = diffInMillis / (60 * 1000);
-		long diffInHours = diffInMillis / (60 * 60 * 1000);
-		long diffInDays = diffInMillis / (24 * 60 * 60 * 1000);
-		
-		if (diffInMinutes < 1) {
-			return "Vừa xong";
-		} else if (diffInMinutes < 60) {
-			return diffInMinutes + " phút trước";
-		} else if (diffInHours < 24) {
-			return diffInHours + " giờ trước";
-		} else if (diffInDays == 1) {
-			return "Hôm qua";
-		} else {
-			return diffInDays + " ngày trước";
-		}
-	}
+        Query<Object[]> query = getSession().createQuery(hql, Object[].class);
+        query.setParameter("userId", userId);
+        List<Object[]> results = query.getResultList();
+
+        Map<String, Long> modeStats = new HashMap<>();
+        for (Object[] result : results) {
+            modeStats.put((String) result[0], (Long) result[1]);
+        }
+        return modeStats;
+    }
+
+    @Override
+    public List<RecentPracticeDTO> getRecentPracticeHistory(Integer userId) {
+        String hql = "SELECT ph.mode, MAX(ph.practiceDate) as latestDate " +
+                "FROM PracticeHistory ph " +
+                "JOIN UserVocab uv ON ph.userVocabId = uv.id " +
+                "WHERE uv.userId = :userId " +
+                "AND ph.mode IN ('quiz', 'listening', 'fill', 'flashcard') " +
+                "GROUP BY ph.mode " +
+                "ORDER BY latestDate ASC";
+
+        Query<Object[]> query = getSession().createQuery(hql, Object[].class);
+        query.setParameter("userId", userId);
+        query.setMaxResults(4); // Limit to 4 most recent activities
+
+        List<Object[]> results = query.getResultList();
+        List<RecentPracticeDTO> recentPractices = new ArrayList<>();
+
+        for (Object[] result : results) {
+            String mode = (String) result[0];
+            Date practiceDate = (Date) result[1];
+
+            RecentPracticeDTO dto = new RecentPracticeDTO();
+            dto.setMode(mode);
+            dto.setPracticeDate(practiceDate);
+            dto.setDescription(getDescriptionByMode(mode));
+            dto.setTimeAgo(calculateTimeAgo(practiceDate));
+
+            recentPractices.add(dto);
+        }
+
+        return recentPractices;
+    }
+
+    private String getDescriptionByMode(String mode) {
+        switch (mode) {
+            case "flashcard":
+                return "Luyện tập Flashcard";
+            case "quiz":
+                return "Hoàn thành Quiz";
+            case "listening":
+                return "Luyện nghe";
+            case "fill":
+                return "Điền từ";
+            default:
+                return "Luyện tập";
+        }
+    }
+
+    private String calculateTimeAgo(Date practiceDate) {
+        long practiceTime = practiceDate.getTime();
+        long offset = java.util.TimeZone.getDefault().getOffset(practiceTime);
+        long adjustedTime = practiceTime + offset;
+
+        long diffInMillis = System.currentTimeMillis() - adjustedTime;
+
+        // Handle case where time difference is negative (clock skew or future date)
+        if (diffInMillis < 0) {
+            diffInMillis = 0;
+        }
+
+        long diffInMinutes = diffInMillis / (60 * 1000);
+        long diffInHours = diffInMillis / (60 * 60 * 1000);
+        long diffInDays = diffInMillis / (24 * 60 * 60 * 1000);
+
+        if (diffInMinutes < 1) {
+            return "Vừa xong";
+        } else if (diffInMinutes < 60) {
+            return diffInMinutes + " phút trước";
+        } else if (diffInHours < 24) {
+            return diffInHours + " giờ trước";
+        } else if (diffInDays == 1) {
+            return "Hôm qua";
+        } else {
+            return diffInDays + " ngày trước";
+        }
+    }
 }

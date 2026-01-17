@@ -167,7 +167,7 @@ public class UserVocabServiceImpl extends BaseRepositoryImpl<UserVocab, Integer>
 	@Override
 	public void saveHistoryPractice(List<PracticeHistory> histories) {
 		for (PracticeHistory history : histories) {
-			PracticeHistory exitHistory = practiceHistoryRepository.findByUserVocabId(history.getUserVocabId());
+			PracticeHistory exitHistory = practiceHistoryRepository.findByUserVocabIdAndMode(history.getUserVocabId(), history.getMode());
 			// Nếu đã có lịch sử và trùng mode thì cập nhật lại
 			if (exitHistory != null && exitHistory.getMode().equals(history.getMode())) {
 				// Cập nhật lại số lần đúng/sai
