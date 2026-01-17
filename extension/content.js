@@ -150,16 +150,11 @@ function positionTooltip(tooltip, rect) {
 	const viewportWidth = window.innerWidth;
 	const viewportHeight = window.innerHeight;
 
-	// Initial position: Try below first
-	let top = rect.bottom + scrollTop + 10;
-	let left = rect.left + scrollLeft;
-
-	// Set initial styles to calculate dimensions
+	// Make sure tooltip is visible and in DOM to calculate size
 	tooltip.style.position = 'absolute';
 	tooltip.style.zIndex = '2147483647';
-	tooltip.style.visibility = 'hidden'; // Hide while calculating
+	tooltip.style.visibility = 'hidden';
 
-	// Need to append briefly to calculate size if not already in DOM
 	const needsAppend = !tooltip.parentNode;
 	if (needsAppend) document.body.appendChild(tooltip);
 
@@ -167,40 +162,99 @@ function positionTooltip(tooltip, rect) {
 	const tooltipHeight = tooltipRect.height;
 	const tooltipWidth = tooltipRect.width;
 
-	// 1. Vertical Positioning
-	// Check if there is space below
+	const margin = 10;
+
+	// Calculate available space
 	const spaceBelow = viewportHeight - rect.bottom;
 	const spaceAbove = rect.top;
+	const spaceRight = viewportWidth - rect.right;
+	const spaceLeft = rect.left;
 
-	if (spaceBelow < tooltipHeight + 20 && spaceAbove > tooltipHeight + 20) {
-		// Not enough space below, but enough above -> Go ABOVE
-		top = rect.top + scrollTop - tooltipHeight - 10;
-	} else if (spaceBelow < tooltipHeight + 20 && spaceAbove < tooltipHeight + 20) {
-		// Not enough space above OR below -> Clamp to viewport bottom or top
-		// Prefer showing as much as possible
-		if (rect.bottom < viewportHeight / 2) {
-			// Selection is in top half, force below but clamp
-			top = Math.min(top, scrollTop + viewportHeight - tooltipHeight - 10);
-		} else {
-			// Selection is in bottom half, force above but clamp
-			top = Math.max(scrollTop + 10, rect.top + scrollTop - tooltipHeight - 10);
+	let top, left;
+	let positionFound = false;
+
+	// 1. Try Below
+	if (spaceBelow >= tooltipHeight + margin) {
+		top = rect.bottom + scrollTop + margin;
+		left = rect.left + scrollLeft;
+		// Constrain horizontal
+		if (left + tooltipWidth > scrollLeft + viewportWidth) {
+			left = scrollLeft + viewportWidth - tooltipWidth - margin;
 		}
+		if (left < scrollLeft) left = scrollLeft + margin;
+		positionFound = true;
+	}
+	// 2. Try Above
+	else if (spaceAbove >= tooltipHeight + margin) {
+		top = rect.top + scrollTop - tooltipHeight - margin;
+		left = rect.left + scrollLeft;
+		// Constrain horizontal
+		if (left + tooltipWidth > scrollLeft + viewportWidth) {
+			left = scrollLeft + viewportWidth - tooltipWidth - margin;
+		}
+		if (left < scrollLeft) left = scrollLeft + margin;
+		positionFound = true;
+	}
+	// 3. Try Right (Side)
+	else if (spaceRight >= tooltipWidth + margin) {
+		top = rect.top + scrollTop;
+		left = rect.right + scrollLeft + margin;
+		// Constrain vertical
+		if (top + tooltipHeight > scrollTop + viewportHeight) {
+			top = scrollTop + viewportHeight - tooltipHeight - margin;
+		}
+		if (top < scrollTop) top = scrollTop + margin;
+		positionFound = true;
+	}
+	// 4. Try Left (Side)
+	else if (spaceLeft >= tooltipWidth + margin) {
+		top = rect.top + scrollTop;
+		left = rect.left + scrollLeft - tooltipWidth - margin;
+		// Constrain vertical
+		if (top + tooltipHeight > scrollTop + viewportHeight) {
+			top = scrollTop + viewportHeight - tooltipHeight - margin;
+		}
+		if (top < scrollTop) top = scrollTop + margin;
+		positionFound = true;
 	}
 
-	// 2. Horizontal Positioning
-	// Ensure it doesn't go off the right edge
-	if (rect.left + tooltipWidth > viewportWidth + scrollLeft) {
-		left = viewportWidth + scrollLeft - tooltipWidth - 20;
-	}
-	// Ensure it doesn't go off the left edge
-	if (left < scrollLeft) {
-		left = scrollLeft + 10;
+	// 5. Fallback: If nothing fits perfectly without overlap
+	if (!positionFound) {
+		// Prefer going below or above even if it requires scrolling or minor overlap?
+		// Or try to place it in the largest available space?
+
+		// Let's try to stick it to the side with the most space if vertical is tight
+		if (spaceRight > spaceLeft && spaceRight > 200) { // arbitrary min width
+			top = rect.top + scrollTop;
+			left = rect.right + scrollLeft + margin;
+		} else if (spaceLeft > 200) {
+			top = rect.top + scrollTop;
+			left = rect.left + scrollLeft - tooltipWidth - margin;
+		} else {
+			// Revert to vertical clamping logic (original fallback)
+			if (spaceBelow > spaceAbove) {
+				top = rect.bottom + scrollTop + margin;
+				// Clamp to viewport
+				top = Math.min(top, scrollTop + viewportHeight - tooltipHeight - margin);
+			} else {
+				top = rect.top + scrollTop - tooltipHeight - margin;
+				// Clamp to viewport
+				top = Math.max(scrollTop + margin, top);
+			}
+			left = rect.left + scrollLeft;
+		}
+
+		// Final horizontal clamp for fallback
+		if (left + tooltipWidth > scrollLeft + viewportWidth) {
+			left = scrollLeft + viewportWidth - tooltipWidth - margin;
+		}
+		if (left < scrollLeft) left = scrollLeft + margin;
 	}
 
 	// Apply final coordinates
 	tooltip.style.top = top + 'px';
 	tooltip.style.left = left + 'px';
-	tooltip.style.visibility = 'visible'; // Show it
+	tooltip.style.visibility = 'visible';
 }
 
 function removeTooltip() {
